@@ -5,6 +5,8 @@ import SolVacaciones from '../pages/SolVacaciones/SolVacaciones';
 import Solicitudes from '../pages/Solicitudes/Solicitudes';
 import Dashboard from '../pages/Dashboard/Dashboard';
 import GestionSolicitudes from '../pages/GestionSolicitudes/GestionSolicitudes';
+import SaldosVacaciones from '../pages/SaldosVacaciones/SaldosVacaciones';
+import GestionUsuarios from '../pages/GestionUsuarios/GestionUsuarios';
 import LayoutRoute from './LayoutRoute'; 
 
 const AppRouter = () => {
@@ -22,11 +24,11 @@ const AppRouter = () => {
           
           {/* Rutas de Reporte de Equipo */}
           <Route path="/reporte-equipo/gestion-solicitudes" element={<LayoutRoute><GestionSolicitudes /></LayoutRoute>} />
-          <Route path="/reporte-equipo/saldos-vacaciones" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
+          <Route path="/reporte-equipo/saldos-vacaciones" element={<LayoutRoute><SaldosVacaciones /></LayoutRoute>} />
           <Route path="/reporte-equipo/programacion-vacaciones" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
           
           {/* Rutas de Administración */}
-          <Route path="/administracion/usuarios" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
+          <Route path="/administracion/usuarios" element={<LayoutRoute><GestionUsuarios /></LayoutRoute>} />
           <Route path="/administracion/departamentos" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
           <Route path="/administracion/configuracion" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
           

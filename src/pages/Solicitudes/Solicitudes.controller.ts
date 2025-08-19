@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SolicitudVacacionesService } from '../../services/solicitudVacaciones.service';
+import { useDataTable } from '../../components/DataTable';
+import type { SortConfig } from '../../components/DataTable';
+import { mapColumnToField } from '../../utils/sortUtils';
 import type { 
-  SolicitudVacacionesDto, 
+  SolicitudVacacionesDetailDto, 
   SolicitudesQueryObject,
-  MisSolicitudesResponse,
-  SolicitudVacacionesDetailDto 
+  MisSolicitudesResponse
 } from '../../services/solicitudVacaciones.service';
 import type { IContextualMenuItem } from '@fluentui/react';
 
@@ -32,7 +34,7 @@ const normalizeDateToMidnight = (date: Date): Date => {
  * @param solicitud - Solicitud a validar
  * @returns true si la solicitud puede ser cancelada, false en caso contrario
  */
-const validateCanCancelSolicitud = (solicitud: SolicitudVacacionesDto): boolean => {
+const validateCanCancelSolicitud = (solicitud: SolicitudVacacionesDetailDto): boolean => {
   // Validar estado pendiente
   if (solicitud.estado !== ESTADO_PENDIENTE) return false;
   
@@ -45,7 +47,7 @@ const validateCanCancelSolicitud = (solicitud: SolicitudVacacionesDto): boolean 
 
 interface UseSolicitudesControllerReturn {
   // Estado de datos
-  solicitudes: SolicitudVacacionesDto[];
+  solicitudes: SolicitudVacacionesDetailDto[];
   solicitudDetail: SolicitudVacacionesDetailDto | null;
   totalSolicitudes: number;
   
@@ -59,11 +61,12 @@ interface UseSolicitudesControllerReturn {
   // Estado del menú contextual
   contextMenuVisible: boolean;
   contextMenuTarget: HTMLElement | null;
-  selectedContextSolicitud: SolicitudVacacionesDto | null;
+  selectedContextSolicitud: SolicitudVacacionesDetailDto | null;
   
   // Filtros y paginación
   currentPage: number;
   pageSize: number;
+  sortConfig: SortConfig | null;
   filters: SolicitudesQueryObject;
   
   // Estadísticas
@@ -81,24 +84,26 @@ interface UseSolicitudesControllerReturn {
   cancelarSolicitud: (solicitudId: string, motivo: string) => Promise<void>;
   applyFilters: (newFilters: Partial<SolicitudesQueryObject>) => void;
   changePage: (page: number) => void;
+  changePageSize: (pageSize: number) => void;
+  handleSort: (columnKey: string, isSortedDescending?: boolean) => void;
   clearError: () => void;
   clearSuccess: () => void;
   navigateToCreate: () => void;
   refreshData: () => void;
   
   // Acciones del menú contextual
-  handleMenuClick: (event: any, solicitud: SolicitudVacacionesDto) => void;
-  getContextMenuItems: (solicitud: SolicitudVacacionesDto | null) => IContextualMenuItem[];
-  canCancelSolicitud: (solicitud: SolicitudVacacionesDto) => boolean;
+  handleMenuClick: (event: any, solicitud: SolicitudVacacionesDetailDto) => void;
+  getContextMenuItems: (solicitud: SolicitudVacacionesDetailDto | null) => IContextualMenuItem[];
+  canCancelSolicitud: (solicitud: SolicitudVacacionesDetailDto) => boolean;
   setContextMenuVisible: (visible: boolean) => void;
   
   // Acciones específicas del menú
-  handleViewDetailFromMenu: (solicitud: SolicitudVacacionesDto) => Promise<void>;
-  handleCancelClickFromMenu: (solicitud: SolicitudVacacionesDto) => void;
+  handleViewDetailFromMenu: (solicitud: SolicitudVacacionesDetailDto) => Promise<void>;
+  handleCancelClickFromMenu: (solicitud: SolicitudVacacionesDetailDto) => void;
   
   // Estados y handlers para modales
-  selectedSolicitud: SolicitudVacacionesDto | null;
-  setSelectedSolicitud: (solicitud: SolicitudVacacionesDto | null) => void;
+  selectedSolicitud: SolicitudVacacionesDetailDto | null;
+  setSelectedSolicitud: (solicitud: SolicitudVacacionesDetailDto | null) => void;
   showDetailDialog: boolean;
   setShowDetailDialog: (show: boolean) => void;
   showCancelDialog: boolean;
@@ -116,7 +121,7 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
   const navigate = useNavigate();
   
   // Estado de datos
-  const [solicitudes, setSolicitudes] = useState<SolicitudVacacionesDto[]>([]);
+  const [solicitudes, setSolicitudes] = useState<SolicitudVacacionesDetailDto[]>([]);
   const [solicitudDetail, setSolicitudDetail] = useState<SolicitudVacacionesDetailDto | null>(null);
   const [totalSolicitudes, setTotalSolicitudes] = useState(0);
   
@@ -130,17 +135,28 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
   // Estado del menú contextual
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [contextMenuTarget, setContextMenuTarget] = useState<HTMLElement | null>(null);
-  const [selectedContextSolicitud, setSelectedContextSolicitud] = useState<SolicitudVacacionesDto | null>(null);
+  const [selectedContextSolicitud, setSelectedContextSolicitud] = useState<SolicitudVacacionesDetailDto | null>(null);
   
   // Estados para modales
-  const [selectedSolicitud, setSelectedSolicitud] = useState<SolicitudVacacionesDto | null>(null);
+  const [selectedSolicitud, setSelectedSolicitud] = useState<SolicitudVacacionesDetailDto | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelMotivo, setCancelMotivo] = useState('');
   
-  // Filtros y paginación
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+  // Hook de tabla reutilizable
+  const {
+    currentPage,
+    pageSize,
+    sortConfig,
+    changePage,
+    changePageSize,
+    handleSort,
+  } = useDataTable({
+    initialPageSize: 10,
+    initialPage: 1,
+  });
+  
+  // Filtros
   const [filters, setFilters] = useState<SolicitudesQueryObject>({
     pageNumber: 1,
     pageSize: 10,
@@ -161,11 +177,19 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
       setIsLoading(true);
       setError('');
       
-      const response: MisSolicitudesResponse = await SolicitudVacacionesService.getMisSolicitudes({
-        ...filters,
+      // Construir filtros explícitamente como en Dashboard
+      const queryParams: SolicitudesQueryObject = {
         pageNumber: currentPage,
-        pageSize,
-      });
+        pageSize: pageSize,
+        estado: filters.estado,
+        tipoVacaciones: filters.tipoVacaciones,
+        periodo: filters.periodo,
+        // Agregar parámetros de ordenamiento
+        sortBy: sortConfig ? mapColumnToField(sortConfig.key) : undefined,
+        isDescending: sortConfig ? sortConfig.direction === 'descending' : undefined,
+      };
+      
+      const response: MisSolicitudesResponse = await SolicitudVacacionesService.getMisSolicitudes(queryParams);
       
       setSolicitudes(response.solicitudes);
       setTotalSolicitudes(response.total);
@@ -204,7 +228,7 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, currentPage, pageSize]);
+  }, [filters, currentPage, pageSize, sortConfig]);
 
   // Cargar detalle de solicitud
   const loadSolicitudDetail = useCallback(async (solicitudId: string) => {
@@ -246,13 +270,8 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
   // Aplicar filtros
   const applyFilters = useCallback((newFilters: Partial<SolicitudesQueryObject>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-    setCurrentPage(1); // Reset a la primera página cuando se aplican filtros
-  }, []);
-
-  // Cambiar página
-  const changePage = useCallback((page: number) => {
-    setCurrentPage(page);
-  }, []);
+    changePage(1); // Reset a la primera página cuando se aplican filtros
+  }, [changePage]);
 
   // Limpiar error
   const clearError = useCallback(() => {
@@ -275,18 +294,18 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
   }, [loadSolicitudes]);
 
   // Funciones del menú contextual
-  const handleMenuClick = useCallback((event: any, solicitud: SolicitudVacacionesDto) => {
+  const handleMenuClick = useCallback((event: any, solicitud: SolicitudVacacionesDetailDto) => {
     setSelectedContextSolicitud(solicitud);
     setContextMenuTarget(event.currentTarget);
     event.preventDefault();
     setContextMenuVisible(true);
   }, []);
 
-  const canCancelSolicitud = useCallback((solicitud: SolicitudVacacionesDto): boolean => {
+  const canCancelSolicitud = useCallback((solicitud: SolicitudVacacionesDetailDto): boolean => {
     return validateCanCancelSolicitud(solicitud);
   }, []);
 
-  const getContextMenuItems = useCallback((solicitud: SolicitudVacacionesDto | null): IContextualMenuItem[] => {
+  const getContextMenuItems = useCallback((solicitud: SolicitudVacacionesDetailDto | null): IContextualMenuItem[] => {
     if (!solicitud) return [];
 
     const items: IContextualMenuItem[] = [
@@ -317,13 +336,13 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
   }, [canCancelSolicitud]);
 
   // Acciones específicas del menú
-  const handleViewDetailFromMenu = useCallback(async (solicitud: SolicitudVacacionesDto) => {
+  const handleViewDetailFromMenu = useCallback(async (solicitud: SolicitudVacacionesDetailDto) => {
     setSelectedSolicitud(solicitud);
     await loadSolicitudDetail(solicitud.id);
     setShowDetailDialog(true);
   }, [loadSolicitudDetail]);
 
-  const handleCancelClickFromMenu = useCallback((solicitud: SolicitudVacacionesDto) => {
+  const handleCancelClickFromMenu = useCallback((solicitud: SolicitudVacacionesDetailDto) => {
     setSelectedSolicitud(solicitud);
     setCancelMotivo('');
     setShowCancelDialog(true);
@@ -376,6 +395,7 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
     // Filtros y paginación
     currentPage,
     pageSize,
+    sortConfig,
     filters,
     
     // Estadísticas
@@ -387,6 +407,8 @@ export const useSolicitudesController = (): UseSolicitudesControllerReturn => {
     cancelarSolicitud,
     applyFilters,
     changePage,
+    changePageSize,
+    handleSort,
     clearError,
     clearSuccess,
     navigateToCreate,

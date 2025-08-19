@@ -1,0 +1,38 @@
+/* Estilos para el header de DataTable */
+.custom-datatable .ms-DetailsList .ms-DetailsHeader {
+  background-color: rgb(229, 233, 242) !important;
+}
+
+.custom-datatable .ms-DetailsList .ms-DetailsHeader-cell {
+  background-color: rgb(229, 233, 242) !important;
+}
+
+.custom-datatable .ms-DetailsList .ms-DetailsHeader-cellTitle {
+  background-color: rgb(229, 233, 242) !important;
+}
+
+.custom-datatable .ms-DetailsList .ms-DetailsHeader-cellName {
+  background-color: rgb(229, 233, 242) !important;
+}
+
+/* Estilos adicionales para mayor especificidad */
+.custom-details-list .ms-DetailsHeader {
+  background-color: rgb(229, 233, 242) !important;
+}
+
+.custom-details-list .ms-DetailsHeader-cell {
+  background-color: rgb(229, 233, 242) !important;
+}
+
+.custom-details-list .ms-DetailsHeader-cellTitle {
+  background-color: rgb(229, 233, 242) !important;
+}
+
+/* Hover y focus states */
+.custom-datatable .ms-DetailsList .ms-DetailsHeader-cell:hover {
+  background-color: rgb(229, 233, 242) !important;
+}
+
+.custom-datatable .ms-DetailsList .ms-DetailsHeader-cell:focus {
+  background-color: rgb(229, 233, 242) !important;
+}

@@ -43,7 +43,7 @@ export interface SolicitudVacacionesDetailDto extends SolicitudVacacionesDto {
 
 export interface MisSolicitudesResponse {
   total: number;
-  solicitudes: SolicitudVacacionesDto[];
+  solicitudes: SolicitudVacacionesDetailDto[];
   usuario: string;
   pagina: number;
   tamanoPagina: number;
@@ -57,6 +57,8 @@ export interface SolicitudesQueryObject {
   tipoVacaciones?: string;
   fechaInicio?: string;
   fechaFin?: string;
+  sortBy?: string;
+  isDescending?: boolean;
 }
 
 export interface CancelarSolicitudRequestDto {
@@ -82,6 +84,10 @@ export const SolicitudVacacionesService = {
     if (queryObject?.tipoVacaciones) params.append('tipoVacaciones', queryObject.tipoVacaciones);
     if (queryObject?.fechaInicio) params.append('fechaInicio', queryObject.fechaInicio);
     if (queryObject?.fechaFin) params.append('fechaFin', queryObject.fechaFin);
+    
+    // ✅ Agregar parámetros de ordenamiento que faltaban
+    if (queryObject?.sortBy) params.append('sortBy', queryObject.sortBy);
+    if (queryObject?.isDescending !== undefined) params.append('isDescending', queryObject.isDescending.toString());
 
     const response = await axiosInstance.get<MisSolicitudesResponse>(
       `solicitud-vacaciones/mis-solicitudes?${params.toString()}`

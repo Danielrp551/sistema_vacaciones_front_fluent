@@ -5,6 +5,7 @@ import {
   type EmpleadoDto
 } from '../../services/gestionSolicitudes.service';
 import type { SolicitudVacacionesDetailDto } from '../../services/solicitudVacaciones.service';
+import { mapColumnToField } from '../../utils/sortUtils';
 
 interface SortConfig {
   key: string;
@@ -95,10 +96,16 @@ export const useGestionSolicitudesController = (): UseGestionSolicitudesControll
       setIsLoading(true);
       setError('');
       
+      // Mapear el campo de ordenamiento si existe
+      const sortBy = sortConfig ? mapColumnToField(sortConfig.key) : undefined;
+      const isDescending = sortConfig?.direction === 'descending';
+      
       const response = await GestionSolicitudesService.getSolicitudesEquipo({
         ...filters,
         pageNumber: currentPage,
         pageSize: pageSize,
+        sortBy,
+        isDescending,
       });
 
       setSolicitudes(response.solicitudes);
@@ -122,7 +129,7 @@ export const useGestionSolicitudesController = (): UseGestionSolicitudesControll
     } finally {
       setIsLoading(false);
     }
-  }, [filters, currentPage, pageSize]);
+  }, [filters, currentPage, pageSize, sortConfig]);
 
   // Cargar empleados del equipo
   const loadEmpleados = useCallback(async () => {
@@ -214,52 +221,9 @@ export const useGestionSolicitudesController = (): UseGestionSolicitudesControll
     const direction = isSortedDescending ? 'descending' : 'ascending';
     setSortConfig({ key: columnKey, direction });
     
-    // Ordenar las solicitudes localmente
-    const sortedSolicitudes = [...solicitudes].sort((a, b) => {
-      const aValue = getValueForSorting(a, columnKey);
-      const bValue = getValueForSorting(b, columnKey);
-      
-      if (aValue < bValue) {
-        return direction === 'ascending' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return direction === 'ascending' ? 1 : -1;
-      }
-      return 0;
-    });
-    
-    setSolicitudes(sortedSolicitudes);
-  }, [solicitudes]);
-
-  // Función auxiliar para obtener valores comparables para ordenamiento
-  const getValueForSorting = (item: SolicitudVacacionesDetailDto, columnKey: string): any => {
-    switch (columnKey) {
-      case 'id':
-        return item.id;
-      case 'solicitante':
-        return item.nombreSolicitante.toLowerCase();
-      case 'tipoVacaciones':
-        return item.tipoVacaciones.toLowerCase();
-      case 'fechaInicio':
-        return new Date(item.fechaInicio).getTime();
-      case 'fechaFin':
-        return new Date(item.fechaFin).getTime();
-      case 'diasSolicitados':
-        return item.diasSolicitados;
-      case 'estado':
-        return item.estado.toLowerCase();
-      case 'fechaSolicitud':
-        return new Date(item.fechaSolicitud).getTime();
-      case 'periodo':
-        return item.periodo;
-      case 'manager':
-        return (item.nombreAprobador || '').toLowerCase();
-      case 'fechaGestion':
-        return item.fechaAprobacion ? new Date(item.fechaAprobacion).getTime() : 0;
-      default:
-        return '';
-    }
-  };
+    // Reset a la primera página cuando se cambia el ordenamiento
+    setCurrentPage(1);
+  }, []);
 
   // Cargar datos iniciales
   useEffect(() => {

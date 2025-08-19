@@ -70,6 +70,10 @@ export const GestionSolicitudesService = {
     if (queryObject?.fechaInicioRango) params.append('fechaInicioRango', queryObject.fechaInicioRango);
     if (queryObject?.fechaFinRango) params.append('fechaFinRango', queryObject.fechaFinRango);
 
+    // Agregar parámetros de ordenamiento
+    if (queryObject?.sortBy) params.append('sortBy', queryObject.sortBy);
+    if (queryObject?.isDescending !== undefined) params.append('isDescending', queryObject.isDescending.toString());
+
     const response = await axiosInstance.get<GestionSolicitudesResponse>(
       `solicitud-vacaciones/gestion-solicitudes?${params.toString()}`
     );

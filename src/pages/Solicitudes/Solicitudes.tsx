@@ -7,9 +7,6 @@ import {
   Dropdown,
   MessageBar,
   MessageBarType,
-  DetailsList,
-  DetailsListLayoutMode,
-  SelectionMode,
   Spinner,
   SpinnerSize,
   IconButton,
@@ -17,12 +14,13 @@ import {
   DialogType,
   DialogFooter,
   TextField,
-  TooltipHost,
   Icon,
   CommandBarButton,
   ContextualMenu,
 } from '@fluentui/react';
-import type { IColumn, IDropdownOption } from '@fluentui/react';
+import type { IDropdownOption } from '@fluentui/react';
+import { DataTable, StatusBadge } from '../../components/DataTable';
+import type { DataTableColumn, SortConfig } from '../../components/DataTable';
 import { useSolicitudesController } from './Solicitudes.controller';
 import {
   containerStyles,
@@ -41,12 +39,10 @@ import {
   emptyStateIconStyles,
   emptyStateTitleStyles,
   emptyStateMessageStyles,
-  paginationContainerStyles,
-  actionButtonsStyles,
   optimizedModalStyles,
   compactModalStyles,
 } from './Solicitudes.styles';
-import type { SolicitudVacacionesDto } from '../../services/solicitudVacaciones.service';
+import type { SolicitudVacacionesDetailDto } from '../../services/solicitudVacaciones.service';
 
 const Solicitudes: React.FC = () => {
   const {
@@ -63,28 +59,23 @@ const Solicitudes: React.FC = () => {
     selectedContextSolicitud,
     currentPage,
     pageSize,
+    sortConfig,
     filters,
     stats,
-    loadSolicitudDetail,
-    cancelarSolicitud,
     applyFilters,
     changePage,
+    changePageSize,
+    handleSort,
     clearError,
     clearSuccess,
     navigateToCreate,
     refreshData,
     handleMenuClick,
     getContextMenuItems,
-    canCancelSolicitud,
     setContextMenuVisible,
-    handleViewDetailFromMenu,
-    handleCancelClickFromMenu,
     selectedSolicitud,
-    setSelectedSolicitud,
     showDetailDialog,
-    setShowDetailDialog,
     showCancelDialog,
-    setShowCancelDialog,
     cancelMotivo,
     setCancelMotivo,
     handleCancelConfirm,
@@ -124,37 +115,19 @@ const Solicitudes: React.FC = () => {
     });
   };
 
-  // Obtener el color del estado
-  const getEstadoColor = (estado: string): string => {
-    switch (estado.toLowerCase()) {
-      case 'pendiente':
-        return '#d83b01'; // Orange
-      case 'aprobado':
-      case 'aprobada':
-        return '#107c10'; // Green
-      case 'rechazado':
-      case 'rechazada':
-        return '#d13438'; // Red
-      case 'cancelado':
-      case 'cancelada':
-        return '#605e5c'; // Gray
-      default:
-        return '#323130'; // Default
-    }
-  };
-
-  // Columnas de la tabla
-  const columns: IColumn[] = [
+  // Definir las columnas para el DataTable según el orden solicitado:
+  // Acciones, Id, Solicitante, Tipo, F. Inicio, F. Fin, Días, Estado, Solicitado, Periodo, Manager, Aprobado Por, F. Gestión
+  const columns: DataTableColumn<SolicitudVacacionesDetailDto>[] = [
     {
       key: 'acciones',
       name: 'Acciones',
       fieldName: 'acciones',
-      minWidth: 30,
-      maxWidth: 40,
+      minWidth: 40,
+      maxWidth: 45,
       isResizable: false,
       data: 'string',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDto) => {
+      onRender: (item: SolicitudVacacionesDetailDto) => {
         return (
           <IconButton
             iconProps={{ iconName: 'More' }}
@@ -184,9 +157,28 @@ const Solicitudes: React.FC = () => {
       isResizable: false,
       data: 'number',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDto) => (
+      isSorted: sortConfig?.key === 'id',
+      isSortedDescending: sortConfig?.key === 'id' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { fontWeight: '600' } }}>
           #{item.id}
+        </Text>
+      ),
+    },
+    {
+      key: 'solicitante',
+      name: 'Solicitante',
+      fieldName: 'nombreSolicitante',
+      minWidth: 120,
+      maxWidth: 160,
+      isResizable: false,
+      data: 'string',
+      isPadded: true,
+      isSorted: sortConfig?.key === 'solicitante',
+      isSortedDescending: sortConfig?.key === 'solicitante' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="medium" styles={{ root: { fontWeight: '500' } }}>
+          {item.nombreSolicitante}
         </Text>
       ),
     },
@@ -194,35 +186,51 @@ const Solicitudes: React.FC = () => {
       key: 'tipoVacaciones',
       name: 'Tipo',
       fieldName: 'tipoVacaciones',
-      minWidth: 80,
-      maxWidth: 100,
+      minWidth: 70,
+      maxWidth: 90,
       isResizable: false,
       data: 'string',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDto) => (
+      isSorted: sortConfig?.key === 'tipoVacaciones',
+      isSortedDescending: sortConfig?.key === 'tipoVacaciones' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { textTransform: 'capitalize' } }}>
           {item.tipoVacaciones}
         </Text>
       ),
     },
     {
-      key: 'fechas',
-      name: 'Fechas',
+      key: 'fechaInicio',
+      name: 'F. Inicio',
       fieldName: 'fechaInicio',
-      minWidth: 140,
-      maxWidth: 180,
+      minWidth: 90,
+      maxWidth: 110,
       isResizable: false,
       data: 'string',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDto) => (
-        <Stack tokens={{ childrenGap: 2 }}>
-          <Text variant="small" styles={{ root: { fontWeight: '500' } }}>
-            {formatDate(item.fechaInicio)}
-          </Text>
-          <Text variant="small" styles={{ root: { color: '#605e5c', fontSize: '12px' } }}>
-            al {formatDate(item.fechaFin)}
-          </Text>
-        </Stack>
+      isSorted: sortConfig?.key === 'fechaInicio',
+      isSortedDescending: sortConfig?.key === 'fechaInicio' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="small" styles={{ root: { fontWeight: '500' } }}>
+          {formatDate(item.fechaInicio)}
+        </Text>
+      ),
+    },
+    {
+      key: 'fechaFin',
+      name: 'F. Fin',
+      fieldName: 'fechaFin',
+      minWidth: 90,
+      maxWidth: 110,
+      isResizable: false,
+      data: 'string',
+      isPadded: true,
+      isSorted: sortConfig?.key === 'fechaFin',
+      isSortedDescending: sortConfig?.key === 'fechaFin' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="small" styles={{ root: { fontWeight: '500' } }}>
+          {formatDate(item.fechaFin)}
+        </Text>
       ),
     },
     {
@@ -234,7 +242,9 @@ const Solicitudes: React.FC = () => {
       isResizable: false,
       data: 'number',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDto) => (
+      isSorted: sortConfig?.key === 'diasSolicitados',
+      isSortedDescending: sortConfig?.key === 'diasSolicitados' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { fontWeight: '600', textAlign: 'center', color: '#0078d4' } }}>
           {item.diasSolicitados}
         </Text>
@@ -249,26 +259,10 @@ const Solicitudes: React.FC = () => {
       isResizable: false,
       data: 'string',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDto) => (
-        <Text
-          variant="small"
-          styles={{
-            root: {
-              backgroundColor: `${getEstadoColor(item.estado)}15`,
-              color: getEstadoColor(item.estado),
-              padding: '4px 8px',
-              borderRadius: '12px',
-              fontWeight: '600',
-              textTransform: 'capitalize',
-              textAlign: 'center',
-              fontSize: '11px',
-              display: 'inline-block',
-              minWidth: '70px',
-            },
-          }}
-        >
-          {item.estado}
-        </Text>
+      isSorted: sortConfig?.key === 'estado',
+      isSortedDescending: sortConfig?.key === 'estado' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <StatusBadge status={item.estado} variant="small" />
       ),
     },
     {
@@ -280,7 +274,9 @@ const Solicitudes: React.FC = () => {
       isResizable: false,
       data: 'string',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDto) => (
+      isSorted: sortConfig?.key === 'fechaSolicitud',
+      isSortedDescending: sortConfig?.key === 'fechaSolicitud' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
           {formatDate(item.fechaSolicitud)}
         </Text>
@@ -295,9 +291,62 @@ const Solicitudes: React.FC = () => {
       isResizable: false,
       data: 'number',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDto) => (
+      isSorted: sortConfig?.key === 'periodo',
+      isSortedDescending: sortConfig?.key === 'periodo' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { fontWeight: '500' } }}>
           {item.periodo}
+        </Text>
+      ),
+    },
+    {
+      key: 'manager',
+      name: 'Manager',
+      fieldName: 'nombreJefeDirecto',
+      minWidth: 120,
+      maxWidth: 160,
+      isResizable: false,
+      data: 'string',
+      isPadded: true,
+      isSorted: sortConfig?.key === 'manager',
+      isSortedDescending: sortConfig?.key === 'manager' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
+          {item.nombreJefeDirecto || 'Sin asignar'}
+        </Text>
+      ),
+    },
+    {
+      key: 'aprobadoPor',
+      name: 'Aprobado Por',
+      fieldName: 'nombreAprobador',
+      minWidth: 120,
+      maxWidth: 160,
+      isResizable: false,
+      data: 'string',
+      isPadded: true,
+      isSorted: sortConfig?.key === 'aprobadoPor',
+      isSortedDescending: sortConfig?.key === 'aprobadoPor' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
+          {item.nombreAprobador || '-'}
+        </Text>
+      ),
+    },
+    {
+      key: 'fechaGestion',
+      name: 'F. Gestión',
+      fieldName: 'fechaAprobacion',
+      minWidth: 100,
+      maxWidth: 120,
+      isResizable: false,
+      data: 'string',
+      isPadded: true,
+      isSorted: sortConfig?.key === 'fechaGestion',
+      isSortedDescending: sortConfig?.key === 'fechaGestion' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
+          {item.fechaAprobacion ? formatDate(item.fechaAprobacion) : '-'}
         </Text>
       ),
     },
@@ -320,11 +369,6 @@ const Solicitudes: React.FC = () => {
       periodo: undefined,
     });
   };
-
-  // Calcular información de paginación
-  const totalPages = Math.ceil(totalSolicitudes / pageSize);
-  const startItem = (currentPage - 1) * pageSize + 1;
-  const endItem = Math.min(currentPage * pageSize, totalSolicitudes);
 
   return (
     <Stack styles={containerStyles} tokens={{ childrenGap: 24 }}>
@@ -504,51 +548,25 @@ const Solicitudes: React.FC = () => {
             />
           </Stack>
         ) : (
-          <>
-            <Stack styles={tableContainerStyles}>
-              <div className="vacation-table-container">
-                <DetailsList
-                  items={solicitudes}
-                  columns={columns}
-                  layoutMode={DetailsListLayoutMode.fixedColumns}
-                  selectionMode={SelectionMode.none}
-                  isHeaderVisible={true}
-                  compact={true}
-                  setKey="solicitudesVacaciones"
-                  onShouldVirtualize={() => false}
-                />
-              </div>
-            </Stack>
-
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <Stack
-                horizontal
-                horizontalAlign="space-between"
-                verticalAlign="center"
-                styles={paginationContainerStyles}
-              >
-                <Text styles={{ root: { fontSize: '14px', color: '#605e5c' } }}>
-                  Mostrando {startItem}-{endItem} de {totalSolicitudes} solicitudes
-                </Text>
-                <Stack horizontal tokens={{ childrenGap: 8 }} verticalAlign="center">
-                  <IconButton
-                    iconProps={{ iconName: 'ChevronLeft' }}
-                    title="Página anterior"
-                    disabled={currentPage === 1}
-                    onClick={() => changePage(currentPage - 1)}
-                  />
-                  <Text>{currentPage} de {totalPages}</Text>
-                  <IconButton
-                    iconProps={{ iconName: 'ChevronRight' }}
-                    title="Página siguiente"
-                    disabled={currentPage === totalPages}
-                    onClick={() => changePage(currentPage + 1)}
-                  />
-                </Stack>
-              </Stack>
-            )}
-          </>
+          <Stack styles={tableContainerStyles}>
+            <DataTable
+              items={solicitudes}
+              columns={columns}
+              isLoading={isLoading}
+              emptyStateTitle="No hay solicitudes"
+              emptyStateMessage="No se encontraron solicitudes de vacaciones para mostrar"
+              onSort={handleSort}
+              pagination={{
+                currentPage,
+                pageSize,
+                totalItems: totalSolicitudes,
+                pageSizeOptions: [5, 10, 25, 50],
+                itemName: 'solicitudes',
+                onPageChange: changePage,
+                onPageSizeChange: changePageSize,
+              }}
+            />
+          </Stack>
         )}
       </Stack>
 

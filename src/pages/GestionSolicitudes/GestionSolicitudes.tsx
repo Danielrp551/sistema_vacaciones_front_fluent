@@ -7,9 +7,6 @@ import {
   Dropdown,
   MessageBar,
   MessageBarType,
-  DetailsList,
-  DetailsListLayoutMode,
-  SelectionMode,
   Spinner,
   SpinnerSize,
   IconButton,
@@ -24,7 +21,9 @@ import {
   DirectionalHint,
   DatePicker,
 } from '@fluentui/react';
-import type { IColumn, IDropdownOption, IContextualMenuItem, IDatePickerStrings } from '@fluentui/react';
+import type { IDropdownOption, IContextualMenuItem, IDatePickerStrings } from '@fluentui/react';
+import { DataTable, StatusBadge } from '../../components/DataTable';
+import type { DataTableColumn } from '../../components/DataTable';
 import { useGestionSolicitudesController } from './GestionSolicitudes.controller';
 import {
   containerStyles,
@@ -43,7 +42,6 @@ import {
   emptyStateIconStyles,
   emptyStateTitleStyles,
   emptyStateMessageStyles,
-  paginationContainerStyles,
 } from './GestionSolicitudes.styles';
 import type { SolicitudVacacionesDetailDto } from '../../services/solicitudVacaciones.service';
 
@@ -168,14 +166,15 @@ const GestionSolicitudes: React.FC = () => {
     return solicitud.estado.toLowerCase() === 'pendiente' && solicitud.puedeAprobar;
   };
 
-  // Columnas de la tabla
-  const columns: IColumn[] = [
+  // Columnas para el DataTable según el orden solicitado:
+  // Acciones, Id, Solicitante, Tipo, F. Inicio, F. Fin, Días, Estado, Solicitado, Periodo, Manager, Aprobado Por, F. Gestión
+  const columns: DataTableColumn<SolicitudVacacionesDetailDto>[] = [
     {
       key: 'acciones',
       name: 'Acciones',
       fieldName: 'acciones',
-      minWidth: 30,
-      maxWidth: 40,
+      minWidth: 40,
+      maxWidth: 45,
       isResizable: false,
       data: 'string',
       isPadded: true,
@@ -207,11 +206,10 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 60,
       maxWidth: 80,
       isResizable: false,
-      isSorted: sortConfig?.key === 'id',
-      isSortedDescending: sortConfig?.key === 'id' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('id', sortConfig?.key === 'id' && sortConfig.direction === 'ascending'),
       data: 'number',
       isPadded: true,
+      isSorted: sortConfig?.key === 'id',
+      isSortedDescending: sortConfig?.key === 'id' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { fontWeight: '600' } }}>
           #{item.id}
@@ -225,11 +223,10 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 120,
       maxWidth: 180,
       isResizable: false,
-      isSorted: sortConfig?.key === 'solicitante',
-      isSortedDescending: sortConfig?.key === 'solicitante' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('solicitante', sortConfig?.key === 'solicitante' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
+      isSorted: sortConfig?.key === 'solicitante',
+      isSortedDescending: sortConfig?.key === 'solicitante' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { fontWeight: '500' } }}>
           {item.nombreSolicitante}
@@ -243,11 +240,10 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 70,
       maxWidth: 90,
       isResizable: false,
-      isSorted: sortConfig?.key === 'tipoVacaciones',
-      isSortedDescending: sortConfig?.key === 'tipoVacaciones' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('tipoVacaciones', sortConfig?.key === 'tipoVacaciones' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
+      isSorted: sortConfig?.key === 'tipoVacaciones',
+      isSortedDescending: sortConfig?.key === 'tipoVacaciones' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { textTransform: 'capitalize' } }}>
           {item.tipoVacaciones}
@@ -261,11 +257,10 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 90,
       maxWidth: 110,
       isResizable: false,
-      isSorted: sortConfig?.key === 'fechaInicio',
-      isSortedDescending: sortConfig?.key === 'fechaInicio' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('fechaInicio', sortConfig?.key === 'fechaInicio' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
+      isSorted: sortConfig?.key === 'fechaInicio',
+      isSortedDescending: sortConfig?.key === 'fechaInicio' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="small" styles={{ root: { fontWeight: '500' } }}>
           {formatDate(item.fechaInicio)}
@@ -279,11 +274,10 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 90,
       maxWidth: 110,
       isResizable: false,
-      isSorted: sortConfig?.key === 'fechaFin',
-      isSortedDescending: sortConfig?.key === 'fechaFin' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('fechaFin', sortConfig?.key === 'fechaFin' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
+      isSorted: sortConfig?.key === 'fechaFin',
+      isSortedDescending: sortConfig?.key === 'fechaFin' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="small" styles={{ root: { fontWeight: '500' } }}>
           {formatDate(item.fechaFin)}
@@ -297,11 +291,10 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 60,
       maxWidth: 80,
       isResizable: false,
-      isSorted: sortConfig?.key === 'diasSolicitados',
-      isSortedDescending: sortConfig?.key === 'diasSolicitados' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('diasSolicitados', sortConfig?.key === 'diasSolicitados' && sortConfig.direction === 'ascending'),
       data: 'number',
       isPadded: true,
+      isSorted: sortConfig?.key === 'diasSolicitados',
+      isSortedDescending: sortConfig?.key === 'diasSolicitados' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { fontWeight: '600', textAlign: 'center', color: '#0078d4' } }}>
           {item.diasSolicitados}
@@ -315,31 +308,12 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 100,
       maxWidth: 120,
       isResizable: false,
-      isSorted: sortConfig?.key === 'estado',
-      isSortedDescending: sortConfig?.key === 'estado' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('estado', sortConfig?.key === 'estado' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
+      isSorted: sortConfig?.key === 'estado',
+      isSortedDescending: sortConfig?.key === 'estado' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
-        <Text
-          variant="small"
-          styles={{
-            root: {
-              backgroundColor: `${getEstadoColor(item.estado)}15`,
-              color: getEstadoColor(item.estado),
-              padding: '4px 8px',
-              borderRadius: '12px',
-              fontWeight: '600',
-              textTransform: 'capitalize',
-              textAlign: 'center',
-              fontSize: '11px',
-              display: 'inline-block',
-              minWidth: '70px',
-            },
-          }}
-        >
-          {item.estado}
-        </Text>
+        <StatusBadge status={item.estado} variant="small" />
       ),
     },
     {
@@ -349,11 +323,10 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 100,
       maxWidth: 120,
       isResizable: false,
-      isSorted: sortConfig?.key === 'fechaSolicitud',
-      isSortedDescending: sortConfig?.key === 'fechaSolicitud' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('fechaSolicitud', sortConfig?.key === 'fechaSolicitud' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
+      isSorted: sortConfig?.key === 'fechaSolicitud',
+      isSortedDescending: sortConfig?.key === 'fechaSolicitud' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
           {formatDate(item.fechaSolicitud)}
@@ -367,11 +340,10 @@ const GestionSolicitudes: React.FC = () => {
       minWidth: 70,
       maxWidth: 90,
       isResizable: false,
-      isSorted: sortConfig?.key === 'periodo',
-      isSortedDescending: sortConfig?.key === 'periodo' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('periodo', sortConfig?.key === 'periodo' && sortConfig.direction === 'ascending'),
       data: 'number',
       isPadded: true,
+      isSorted: sortConfig?.key === 'periodo',
+      isSortedDescending: sortConfig?.key === 'periodo' && sortConfig?.direction === 'descending',
       onRender: (item: SolicitudVacacionesDetailDto) => (
         <Text variant="medium" styles={{ root: { fontWeight: '500' } }}>
           {item.periodo}
@@ -383,96 +355,51 @@ const GestionSolicitudes: React.FC = () => {
       name: 'Manager',
       fieldName: 'nombreJefeDirecto',
       minWidth: 120,
-      maxWidth: 150,
+      maxWidth: 160,
       isResizable: false,
-      isSorted: sortConfig?.key === 'manager',
-      isSortedDescending: sortConfig?.key === 'manager' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('manager', sortConfig?.key === 'manager' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDetailDto) => {
-        if (item.nombreJefeDirecto) {
-          return (
-            <Text variant="small" styles={{ root: { fontWeight: '500' } }}>
-              {item.nombreJefeDirecto}
-            </Text>
-          );
-        } else {
-          return (
-            <Text variant="small" styles={{ root: { color: '#605e5c', fontStyle: 'italic' } }}>
-              Sin asignar
-            </Text>
-          );
-        }
-      },
+      isSorted: sortConfig?.key === 'manager',
+      isSortedDescending: sortConfig?.key === 'manager' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
+          {item.nombreJefeDirecto || 'Sin asignar'}
+        </Text>
+      ),
     },
     {
       key: 'aprobadoPor',
-      name: 'Aprobado por',
+      name: 'Aprobado Por',
       fieldName: 'nombreAprobador',
       minWidth: 120,
-      maxWidth: 150,
+      maxWidth: 160,
       isResizable: false,
-      isSorted: sortConfig?.key === 'aprobadoPor',
-      isSortedDescending: sortConfig?.key === 'aprobadoPor' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('aprobadoPor', sortConfig?.key === 'aprobadoPor' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDetailDto) => {
-        if (item.nombreAprobador && item.estado.toLowerCase() !== 'pendiente') {
-          return (
-            <Text variant="small" styles={{ root: { fontWeight: '500' } }}>
-              {item.nombreAprobador}
-            </Text>
-          );
-        } else if (item.estado.toLowerCase() === 'pendiente') {
-          return (
-            <Text variant="small" styles={{ root: { color: '#d83b01', fontStyle: 'italic' } }}>
-              Pendiente
-            </Text>
-          );
-        } else {
-          return (
-            <Text variant="small" styles={{ root: { color: '#605e5c', fontStyle: 'italic' } }}>
-              -
-            </Text>
-          );
-        }
-      },
+      isSorted: sortConfig?.key === 'aprobadoPor',
+      isSortedDescending: sortConfig?.key === 'aprobadoPor' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
+          {item.nombreAprobador || '-'}
+        </Text>
+      ),
     },
     {
       key: 'fechaGestion',
       name: 'F. Gestión',
       fieldName: 'fechaAprobacion',
-      minWidth: 90,
-      maxWidth: 110,
+      minWidth: 100,
+      maxWidth: 120,
       isResizable: false,
-      isSorted: sortConfig?.key === 'fechaGestion',
-      isSortedDescending: sortConfig?.key === 'fechaGestion' && sortConfig.direction === 'descending',
-      onColumnClick: () => handleSort('fechaGestion', sortConfig?.key === 'fechaGestion' && sortConfig.direction === 'ascending'),
       data: 'string',
       isPadded: true,
-      onRender: (item: SolicitudVacacionesDetailDto) => {
-        if (item.fechaAprobacion) {
-          return (
-            <Text variant="small" styles={{ root: { fontWeight: '500' } }}>
-              {formatDate(item.fechaAprobacion)}
-            </Text>
-          );
-        } else if (item.estado.toLowerCase() === 'pendiente') {
-          return (
-            <Text variant="small" styles={{ root: { color: '#d83b01', fontStyle: 'italic' } }}>
-              Pendiente
-            </Text>
-          );
-        } else {
-          return (
-            <Text variant="small" styles={{ root: { color: '#605e5c', fontStyle: 'italic' } }}>
-              -
-            </Text>
-          );
-        }
-      },
+      isSorted: sortConfig?.key === 'fechaGestion',
+      isSortedDescending: sortConfig?.key === 'fechaGestion' && sortConfig?.direction === 'descending',
+      onRender: (item: SolicitudVacacionesDetailDto) => (
+        <Text variant="medium" styles={{ root: { color: '#605e5c' } }}>
+          {item.fechaAprobacion ? formatDate(item.fechaAprobacion) : '-'}
+        </Text>
+      ),
     },
   ];
 
@@ -630,11 +557,6 @@ const GestionSolicitudes: React.FC = () => {
       fechaFinRango: undefined,
     });
   };
-
-  // Calcular información de paginación
-  const totalPages = Math.ceil(totalCompleto / pageSize);
-  const startItem = (currentPage - 1) * pageSize + 1;
-  const endItem = Math.min(currentPage * pageSize, totalCompleto);
 
   return (
     <Stack styles={containerStyles} tokens={{ childrenGap: 24 }}>
@@ -967,316 +889,25 @@ const GestionSolicitudes: React.FC = () => {
             </Text>
           </Stack>
         ) : (
-          <>
-            <Stack styles={tableContainerStyles}>
-              <div className="vacation-table-container">
-                <DetailsList
-                  items={solicitudes}
-                  columns={columns}
-                  layoutMode={DetailsListLayoutMode.fixedColumns}
-                  selectionMode={SelectionMode.none}
-                  isHeaderVisible={true}
-                  compact={true}
-                  setKey="gestionSolicitudes"
-                  onShouldVirtualize={() => false}
-                />
-              </div>
-            </Stack>
-
-            {/* Paginación */}
-            {totalCompleto > 0 && (
-              <Stack
-                horizontal
-                horizontalAlign="space-between"
-                verticalAlign="center"
-                styles={paginationContainerStyles}
-                tokens={{ childrenGap: 24 }}
-                wrap
-              >
-                {/* Información y selector de tamaño de página */}
-                <Stack horizontal tokens={{ childrenGap: 24 }} verticalAlign="center" wrap>
-                  <Text styles={{ 
-                    root: { 
-                      fontSize: '14px', 
-                      color: '#605e5c', 
-                      fontWeight: '500',
-                      minWidth: '200px',
-                    } 
-                  }}>
-                    Mostrando {startItem}-{endItem} de {totalCompleto} solicitudes
-                  </Text>
-                  
-                  <Stack 
-                    horizontal 
-                    tokens={{ childrenGap: 8 }} 
-                    verticalAlign="center"
-                    styles={{
-                      root: {
-                        padding: '8px 12px',
-                        backgroundColor: '#f8f9fa',
-                        borderRadius: '6px',
-                        border: '1px solid #e1e5e9',
-                        minWidth: '160px',
-                      }
-                    }}
-                  >
-                    <Text styles={{ root: { fontSize: '14px', color: '#323130', fontWeight: '500' } }}>
-                      Mostrar
-                    </Text>
-                    <Dropdown
-                      options={[
-                        { key: 5, text: '5' },
-                        { key: 10, text: '10' },
-                        { key: 25, text: '25' },
-                        { key: 50, text: '50' },
-                        { key: 100, text: '100' },
-                      ]}
-                      selectedKey={pageSize}
-                      onChange={(_, option) => {
-                        if (option) {
-                          changePageSize(Number(option.key));
-                        }
-                      }}
-                      styles={{
-                        dropdown: { 
-                          width: 80,
-                          minWidth: 80,
-                        },
-                        title: { 
-                          fontSize: '14px', 
-                          padding: '6px 12px',
-                          backgroundColor: '#ffffff',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '4px',
-                          fontWeight: '500',
-                        },
-                        dropdownItem: { 
-                          fontSize: '14px',
-                          padding: '8px 12px',
-                        },
-                        dropdownItemSelected: {
-                          backgroundColor: '#0078d4',
-                          color: '#ffffff',
-                        },
-                        callout: {
-                          border: '1px solid #d1d5db',
-                          borderRadius: '4px',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                        }
-                      }}
-                    />
-                    <Text styles={{ root: { fontSize: '14px', color: '#323130', fontWeight: '500' } }}>
-                      elementos
-                    </Text>
-                  </Stack>
-                </Stack>
-
-                {/* Controles de navegación */}
-                {totalPages > 1 && (
-                  <Stack 
-                    horizontal 
-                    tokens={{ childrenGap: 4 }} 
-                    verticalAlign="center"
-                    styles={{
-                      root: {
-                        padding: '4px',
-                        backgroundColor: '#f8f9fa',
-                        borderRadius: '8px',
-                        border: '1px solid #e1e5e9',
-                      }
-                    }}
-                  >
-                    {/* Primera página */}
-                    <DefaultButton
-                      text="‹‹"
-                      title="Primera página"
-                      disabled={currentPage === 1}
-                      onClick={() => changePage(1)}
-                      styles={{
-                        root: { 
-                          minWidth: '36px', 
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '6px',
-                          margin: '2px',
-                          color: currentPage === 1 ? '#a19f9d' : '#0078d4',
-                          border: '1px solid transparent',
-                          transition: 'all 0.2s ease',
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                        },
-                        rootHovered: currentPage !== 1 ? {
-                          backgroundColor: '#ffffff',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                          border: '1px solid #0078d4',
-                          transform: 'translateY(-1px)',
-                        } : {
-                          backgroundColor: '#f8f9fa',
-                        },
-                        rootPressed: currentPage !== 1 ? {
-                          backgroundColor: '#f3f2f1',
-                          transform: 'translateY(0px)',
-                        } : {},
-                        rootDisabled: {
-                          backgroundColor: '#f8f9fa',
-                          color: '#a19f9d',
-                          opacity: 0.6,
-                          cursor: 'not-allowed',
-                        },
-                      }}
-                    />
-                    
-                    {/* Página anterior */}
-                    <DefaultButton
-                      text="‹"
-                      title="Página anterior"
-                      disabled={currentPage === 1}
-                      onClick={() => changePage(currentPage - 1)}
-                      styles={{
-                        root: { 
-                          minWidth: '36px', 
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '6px',
-                          margin: '2px',
-                          color: currentPage === 1 ? '#a19f9d' : '#0078d4',
-                          border: '1px solid transparent',
-                          transition: 'all 0.2s ease',
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                        },
-                        rootHovered: currentPage !== 1 ? {
-                          backgroundColor: '#ffffff',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                          border: '1px solid #0078d4',
-                          transform: 'translateY(-1px)',
-                        } : {
-                          backgroundColor: '#f8f9fa',
-                        },
-                        rootPressed: currentPage !== 1 ? {
-                          backgroundColor: '#f3f2f1',
-                          transform: 'translateY(0px)',
-                        } : {},
-                        rootDisabled: {
-                          backgroundColor: '#f8f9fa',
-                          color: '#a19f9d',
-                          opacity: 0.6,
-                          cursor: 'not-allowed',
-                        },
-                      }}
-                    />
-                    
-                    {/* Indicador de página actual */}
-                    <Stack 
-                      verticalAlign="center" 
-                      horizontalAlign="center"
-                      styles={{
-                        root: {
-                          minWidth: '120px',
-                          padding: '8px 16px',
-                          backgroundColor: '#ffffff',
-                          borderRadius: '6px',
-                          border: '1px solid #d1d5db',
-                          margin: '2px',
-                        }
-                      }}
-                    >
-                      <Text styles={{ 
-                        root: { 
-                          fontSize: '14px', 
-                          color: '#323130', 
-                          fontWeight: '600',
-                          textAlign: 'center',
-                        } 
-                      }}>
-                        {currentPage} de {totalPages}
-                      </Text>
-                    </Stack>
-                    
-                    {/* Página siguiente */}
-                    <DefaultButton
-                      text="›"
-                      title="Página siguiente"
-                      disabled={currentPage === totalPages}
-                      onClick={() => changePage(currentPage + 1)}
-                      styles={{
-                        root: { 
-                          minWidth: '36px', 
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '6px',
-                          margin: '2px',
-                          color: currentPage === totalPages ? '#a19f9d' : '#0078d4',
-                          border: '1px solid transparent',
-                          transition: 'all 0.2s ease',
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                        },
-                        rootHovered: currentPage !== totalPages ? {
-                          backgroundColor: '#ffffff',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                          border: '1px solid #0078d4',
-                          transform: 'translateY(-1px)',
-                        } : {
-                          backgroundColor: '#f8f9fa',
-                        },
-                        rootPressed: currentPage !== totalPages ? {
-                          backgroundColor: '#f3f2f1',
-                          transform: 'translateY(0px)',
-                        } : {},
-                        rootDisabled: {
-                          backgroundColor: '#f8f9fa',
-                          color: '#a19f9d',
-                          opacity: 0.6,
-                          cursor: 'not-allowed',
-                        },
-                      }}
-                    />
-                    
-                    {/* Última página */}
-                    <DefaultButton
-                      text="››"
-                      title="Última página"
-                      disabled={currentPage === totalPages}
-                      onClick={() => changePage(totalPages)}
-                      styles={{
-                        root: { 
-                          minWidth: '36px', 
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '6px',
-                          margin: '2px',
-                          color: currentPage === totalPages ? '#a19f9d' : '#0078d4',
-                          border: '1px solid transparent',
-                          transition: 'all 0.2s ease',
-                          fontSize: '16px',
-                          fontWeight: 'bold',
-                        },
-                        rootHovered: currentPage !== totalPages ? {
-                          backgroundColor: '#ffffff',
-                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                          border: '1px solid #0078d4',
-                          transform: 'translateY(-1px)',
-                        } : {
-                          backgroundColor: '#f8f9fa',
-                        },
-                        rootPressed: currentPage !== totalPages ? {
-                          backgroundColor: '#f3f2f1',
-                          transform: 'translateY(0px)',
-                        } : {},
-                        rootDisabled: {
-                          backgroundColor: '#f8f9fa',
-                          color: '#a19f9d',
-                          opacity: 0.6,
-                          cursor: 'not-allowed',
-                        },
-                      }}
-                    />
-                  </Stack>
-                )}
-              </Stack>
-            )}
-          </>
+          <Stack styles={tableContainerStyles}>
+            <DataTable
+              items={solicitudes}
+              columns={columns}
+              isLoading={isLoading}
+              emptyStateTitle="No hay solicitudes"
+              emptyStateMessage="No se encontraron solicitudes de tu equipo con los filtros aplicados"
+              onSort={handleSort}
+              pagination={{
+                currentPage,
+                pageSize,
+                totalItems: totalCompleto,
+                pageSizeOptions: [5, 10, 25, 50],
+                itemName: 'solicitudes',
+                onPageChange: changePage,
+                onPageSizeChange: changePageSize,
+              }}
+            />
+          </Stack>
         )}
       </Stack>
 
