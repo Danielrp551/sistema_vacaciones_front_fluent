@@ -25,7 +25,7 @@ const TopBar = () => {
             styles={styles.menuButton}
           />
           <Text variant="large" styles={styles.title}>
-            Integrity<Text styles={styles.titleAccent}>+</Text> - CMI
+            Marsh McLennan
           </Text>
         </Stack>
 
