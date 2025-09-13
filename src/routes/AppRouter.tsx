@@ -9,7 +9,9 @@ import SaldosVacaciones from '../pages/SaldosVacaciones/SaldosVacaciones';
 import GestionUsuarios from '../pages/GestionUsuarios/GestionUsuarios';
 import GestionRoles from '../pages/GestionRoles/GestionRoles';
 import GestionPermisos from '../pages/GestionPermisos/GestionPermisos';
-import LayoutRoute from './LayoutRoute'; 
+import LayoutRoute from './LayoutRoute';
+import { PermissionGuard } from '../components/Common/PermissionGuard';
+import { PERMISOS } from '../types/permissions'; 
 
 const AppRouter = () => {
   return (
@@ -19,20 +21,80 @@ const AppRouter = () => {
 
         {/* Rutas protegidas */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
-          <Route path="/dashboard" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
-          <Route path="/solicitar-vacaciones" element={<LayoutRoute><SolVacaciones /></LayoutRoute>} />
-          <Route path="/solicitudes" element={<LayoutRoute><Solicitudes /></LayoutRoute>} />
+          <Route path="/" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.DASHBOARD_MENU]}>
+                <Dashboard />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
+          <Route path="/dashboard" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.DASHBOARD_MENU]}>
+                <Dashboard />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
+          <Route path="/solicitar-vacaciones" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.SOLICITAR_VACACIONES_MENU]}>
+                <SolVacaciones />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
+          <Route path="/solicitudes" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.MIS_SOLICITUDES_MENU]}>
+                <Solicitudes />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
           
           {/* Rutas de Reporte de Equipo */}
-          <Route path="/reporte-equipo/gestion-solicitudes" element={<LayoutRoute><GestionSolicitudes /></LayoutRoute>} />
-          <Route path="/reporte-equipo/saldos-vacaciones" element={<LayoutRoute><SaldosVacaciones /></LayoutRoute>} />
-          <Route path="/reporte-equipo/programacion-vacaciones" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
+          <Route path="/reporte-equipo/gestion-solicitudes" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.GESTION_SOLICITUDES_MENU]}>
+                <GestionSolicitudes />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
+          <Route path="/reporte-equipo/saldos-vacaciones" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.SALDOS_VACACIONES_MENU]}>
+                <SaldosVacaciones />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
+          <Route path="/reporte-equipo/programacion-vacaciones" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.PROGRAMACION_VACACIONES_MENU]}>
+                <Dashboard />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
           
           {/* Rutas de Administración */}
-          <Route path="/administracion/usuarios" element={<LayoutRoute><GestionUsuarios /></LayoutRoute>} />
-          <Route path="/administracion/roles" element={<LayoutRoute><GestionRoles /></LayoutRoute>} />
-          <Route path="/administracion/permisos" element={<LayoutRoute><GestionPermisos /></LayoutRoute>} />
+          <Route path="/administracion/usuarios" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.ADMIN_USUARIOS_MENU]}>
+                <GestionUsuarios />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
+          <Route path="/administracion/roles" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.ADMIN_ROLES_MENU]}>
+                <GestionRoles />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
+          <Route path="/administracion/permisos" element={
+            <LayoutRoute>
+              <PermissionGuard permisos={[PERMISOS.ADMIN_PERMISOS_MENU]}>
+                <GestionPermisos />
+              </PermissionGuard>
+            </LayoutRoute>
+          } />
           <Route path="/administracion/departamentos" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
           <Route path="/administracion/configuracion" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
           

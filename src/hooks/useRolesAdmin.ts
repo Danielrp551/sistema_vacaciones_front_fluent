@@ -234,14 +234,14 @@ export const useRolForm = (
 
     if (!formData.name.trim()) {
       errors.name = 'El nombre del rol es requerido';
-    } else if (formData.name.trim().length < 5) {
-      errors.name = 'El nombre debe tener al menos 5 caracteres';
+    } else if (formData.name.trim().length < 3) {
+      errors.name = 'El nombre debe tener al menos 3 caracteres';
     }
 
     if (!formData.descripcion.trim()) {
       errors.descripcion = 'La descripción del rol es requerida';
-    } else if (formData.descripcion.trim().length < 5) {
-      errors.descripcion = 'La descripción debe tener al menos 5 caracteres';
+    } else if (formData.descripcion.trim().length < 3) {
+      errors.descripcion = 'La descripción debe tener al menos 3 caracteres';
     }
 
     if (!formData.permisos.length) {

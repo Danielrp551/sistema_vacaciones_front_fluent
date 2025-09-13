@@ -5,14 +5,18 @@ import type { AuthResponse } from '../services/auth.service';
 export interface AuthUser {
   userName?: string;
   roles?: string[];
+  permisos?: string[];
 }
 
 interface AuthContextValue {
   isAuthenticated: boolean;
   token: string | null;
   user: AuthUser | null;
+  loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  hasPermission: (requiredPermissions: string[]) => boolean;
+  hasAllPermissions: (requiredPermissions: string[]) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -20,22 +24,46 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  // Si ya tienes un endpoint /account/me podrías cargar el usuario aquí:
+  // Cargar datos del usuario si hay token pero no hay datos de usuario
   useEffect(() => {
-    if (!token) {
-      setUser(null);
-    } else {
-      // Opcional: decodificar JWT o pedir /me
-      // const decoded = parseJwt(token); setUser({ userName: decoded.unique_name, roles: decoded.role ? [decoded.role] : [] });
-    }
-  }, [token]);
+    const loadUserData = async () => {
+      if (token && !user) {
+        setLoading(true);
+        try {
+          const currentUser = await AuthService.getCurrentUser();
+          setUser({
+            userName: currentUser.userName,
+            roles: currentUser.roles,
+            permisos: currentUser.permisos
+          });
+        } catch (error) {
+          console.error('Error al cargar datos del usuario:', error);
+          // Si el token es inválido, limpiar la sesión
+          localStorage.removeItem('token');
+          setToken(null);
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
+      } else if (!token) {
+        setUser(null);
+      }
+    };
+
+    loadUserData();
+  }, [token, user]);
 
   const login = async (username: string, password: string) => {
     const res: AuthResponse = await AuthService.login({ username, password });
     localStorage.setItem('token', res.token);
     setToken(res.token);
-    setUser({ userName: res.userName, roles: res.roles });
+    setUser({ 
+      userName: res.userName, 
+      roles: res.roles,
+      permisos: res.permisos || []
+    });
   };
 
   const logout = () => {
@@ -45,13 +73,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Opcional: AuthService.logout();
   };
 
+  // Funciones de validación de permisos
+  const hasPermission = (requiredPermissions: string[]): boolean => {
+    if (!user?.permisos) return false;
+    return requiredPermissions.some(permission => user.permisos!.includes(permission));
+  };
+
+  const hasAllPermissions = (requiredPermissions: string[]): boolean => {
+    if (!user?.permisos) return false;
+    return requiredPermissions.every(permission => user.permisos!.includes(permission));
+  };
+
   const value = useMemo<AuthContextValue>(() => ({
     isAuthenticated: !!token,
     token,
     user,
+    loading,
     login,
     logout,
-  }), [token, user]);
+    hasPermission,
+    hasAllPermissions,
+  }), [token, user, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
