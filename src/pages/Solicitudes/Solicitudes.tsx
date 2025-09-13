@@ -20,7 +20,7 @@ import {
 } from '@fluentui/react';
 import type { IDropdownOption } from '@fluentui/react';
 import { DataTable, StatusBadge } from '../../components/DataTable';
-import type { DataTableColumn, SortConfig } from '../../components/DataTable';
+import type { DataTableColumn } from '../../components/DataTable';
 import { useSolicitudesController } from './Solicitudes.controller';
 import {
   containerStyles,

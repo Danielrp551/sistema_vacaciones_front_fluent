@@ -14,8 +14,7 @@ import type {
   PermisoAdminTableState,
   PermisoFormState,
   PermisoValidationErrors,
-  PermisoDeleteState,
-  PermisosEstadisticas
+  PermisoDeleteState
 } from '../types/permisos';
 import * as permisosAdminAPI from '../api/permisosAdmin';
 

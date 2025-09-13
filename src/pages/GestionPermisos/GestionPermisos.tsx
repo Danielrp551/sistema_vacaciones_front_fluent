@@ -19,8 +19,6 @@ import {
   Pivot,
   PivotItem,
   SearchBox,
-  MessageBar,
-  MessageBarType,
   SelectionMode,
 } from '@fluentui/react';
 import type { IContextualMenuItem } from '@fluentui/react';
@@ -28,8 +26,6 @@ import { DataTable } from '../../components/DataTable';
 import type { DataTableColumn } from '../../components/DataTable';
 import { HistorialAuditoria } from '../../components/auditoria';
 import { Snackbar } from '../../components/Common/Snackbar';
-import { RolModal } from '../../components/GestionRoles';
-import { EstadoRolModal } from '../../components/GestionRoles/EstadoRolModal/EstadoRolModal';
 import { PermisoModal } from '../../components/GestionPermisos';
 import type { PermisoModalMode } from '../../components/GestionPermisos';
 import { useSnackbar } from '../../hooks/useSnackbar';
@@ -53,9 +49,6 @@ import {
   emptyStateIconStyles,
   emptyStateTitleStyles,
   emptyStateMessageStyles,
-  roleBadgeStyles,
-  permisoChipStyles,
-  permisosContainerStyles,
   auditTabStyles,
 } from './GestionPermisos.styles';
 //import { PermisoModal } from '../../components/GestionPermisos';
@@ -73,28 +66,21 @@ const GestionPermisos: React.FC = () => {
     // Estado de datos
     permisos,
     loading: isLoading,
-    error,
     totalCount,
-    totalPages,
     currentPage,
     pageSize,
     estadisticas,
     searchTerm,
-    filtroModulo,
-    filtroEstado,
     sortBy,
     isDescending,
     
     // Funciones
     loadPermisos,
     setSearchTerm,
-    setFiltroModulo,
-    setFiltroEstado,
     changeSorting,
     changePage,
     changePageSize,
-    clearFilters,
-    clearError
+    clearFilters
   } = usePermisosAdmin();
 
   // Estado para el modal de permisos
@@ -261,7 +247,6 @@ const GestionPermisos: React.FC = () => {
   };
 
   // Cálculo de estadísticas
-  const totalPermisosRegistrados = permisos.length;
   const permisosActivos = permisos.filter(permiso => permiso.isActive).length;
 
   return (

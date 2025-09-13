@@ -32,7 +32,7 @@ export interface ModalState {
 
 export interface EstadoRolModalState {
   isOpen: boolean;
-  selectedRol: RolAdmin | null;
+  selectedRol: Permiso | null;
 }
 
 export interface UseGestionRolesControllerReturn {
@@ -69,7 +69,7 @@ export interface UseGestionRolesControllerReturn {
   closeModal: () => void;
   
   // Funciones de cambio de estado
-  openEstadoModal: (rol: RolAdmin) => void;
+  openEstadoModal: (permiso: Permiso) => void;
   closeEstadoModal: () => void;
   
   // Funciones de notificaciones
