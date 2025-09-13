@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Stack,
   Text,
   PrimaryButton,
+  DefaultButton,
   Dropdown,
   Spinner,
   SpinnerSize,
@@ -14,12 +15,15 @@ import {
   ContextualMenuItemType,
   Dialog,
   DialogType,
-  DefaultButton,
+  Pivot,
+  PivotItem,
 } from '@fluentui/react';
 import type { IContextualMenuItem } from '@fluentui/react';
 import { DataTable } from '../../components/DataTable';
 import type { DataTableColumn } from '../../components/DataTable';
 import { NuevoUsuarioModal, ConfirmarToggleStatusModal, ReiniciarPasswordModal } from '../../components/GestionUsuarios';
+import { BulkImportDrawer } from '../../components/BulkImport/BulkImportDrawer';
+import { HistorialAuditoria } from '../../components/auditoria';
 import { Snackbar } from '../../components/Common/Snackbar';
 import { useSnackbar } from '../../hooks/useSnackbar';
 import { useGestionUsuariosController } from './GestionUsuarios.controller';
@@ -50,6 +54,12 @@ import {
 const GestionUsuarios: React.FC = () => {
   // Hook para Snackbar
   const { snackbar, hideSnackbar, showSuccess, showError } = useSnackbar();
+
+  // Estado para las pestañas
+  const [activeTab, setActiveTab] = useState<string>('usuarios');
+
+  // Estado para el drawer de bulk import
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   const {
     // Estado de datos
@@ -85,7 +95,6 @@ const GestionUsuarios: React.FC = () => {
     resetPasswordModal,
     isResettingPassword,
     resetPasswordError,
-    openResetPasswordModal,
     closeResetPasswordModal,
     confirmResetPassword,
     
@@ -358,8 +367,8 @@ const GestionUsuarios: React.FC = () => {
         </Stack>
       </Stack>
 
-      {/* Botón Nuevo Usuario */}
-      <Stack horizontalAlign="start" tokens={{ padding: '16px 0' }}>
+      {/* Botones de acción */}
+      <Stack horizontal horizontalAlign="start" tokens={{ childrenGap: 12, padding: '16px 0' }}>
         <PrimaryButton
           text="Nuevo Usuario"
           iconProps={{ iconName: 'AddFriend' }}
@@ -367,10 +376,31 @@ const GestionUsuarios: React.FC = () => {
           styles={actionButtonStyles}
           disabled={isLoading}
         />
+        <DefaultButton
+          text="Bulk Import"
+          iconProps={{ iconName: 'BulkUpload' }}
+          onClick={() => setIsBulkImportOpen(true)}
+          styles={actionButtonStyles}
+          disabled={isLoading}
+        />
       </Stack>
 
-      {/* Filtros */}
-      <Stack styles={filtersContainerStyles}>
+      {/* Pestañas principales */}
+      <Pivot
+        selectedKey={activeTab}
+        onLinkClick={(item) => setActiveTab(item?.props?.itemKey || 'usuarios')}
+        headersOnly={true}
+        getTabId={(itemKey) => `tab-${itemKey}`}
+      >
+        <PivotItem headerText="Usuarios" itemKey="usuarios" />
+        <PivotItem headerText="Auditoría" itemKey="auditoria" />
+      </Pivot>
+
+      {/* Contenido según pestaña activa */}
+      {activeTab === 'usuarios' && (
+        <>
+          {/* Filtros */}
+          <Stack styles={filtersContainerStyles}>
         <Stack horizontal styles={filterRowStyles} tokens={{ childrenGap: 12 }}>
           <Stack styles={filterItemStyles}>
             <Dropdown
@@ -477,6 +507,20 @@ const GestionUsuarios: React.FC = () => {
           />
         )}
       </Stack>
+        </>
+      )}
+
+      {/* Pestaña de Auditoría */}
+      {activeTab === 'auditoria' && (
+        <HistorialAuditoria 
+          modulo="GESTION_USUARIOS"
+          titulo="Auditoría de Gestión de Usuarios"
+          mensajesVacios={{
+            titulo: "No hay registros de auditoría",
+            mensaje: "No se encontraron acciones realizadas en la gestión de usuarios"
+          }}
+        />
+      )}
 
       {/* Loading overlay para operaciones */}
       {(isOperationLoading || isUserLoading) && (
@@ -541,6 +585,18 @@ const GestionUsuarios: React.FC = () => {
         isLoading={isResettingPassword}
         error={resetPasswordError}
         contrasenaTemporal={resetPasswordModal.contrasenaTemporal}
+      />
+
+      {/* Drawer de Bulk Import */}
+      <BulkImportDrawer
+        isOpen={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        entityType="usuarios"
+        onSuccess={(message) => {
+          showSuccess(message);
+          refresh();
+        }}
+        onError={(error) => showError(error)}
       />
     </Stack>
   );

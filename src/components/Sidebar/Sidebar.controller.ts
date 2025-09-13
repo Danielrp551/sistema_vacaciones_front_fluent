@@ -73,6 +73,18 @@ export const useSidebarController = () => {
           url: '/administracion/usuarios',
         },
         {
+          key: 'roles',
+          name: 'Roles',
+          icon: 'SecurityGroup',
+          url: '/administracion/roles',
+        },
+        {
+          key: 'permisos',
+          name: 'Permisos',
+          icon: 'Permissions',
+          url: '/administracion/permisos',
+        },
+        {
           key: 'departamentos',
           name: 'Departamentos',
           icon: 'Org',

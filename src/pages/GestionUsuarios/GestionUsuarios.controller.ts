@@ -139,6 +139,7 @@ export const useGestionUsuariosController = (
     currentPage,
     pageSize,
     query,
+    estadisticas: estadisticasBackend,
     changePage,
     changePageSize,
     applyFilters,
@@ -348,24 +349,35 @@ export const useGestionUsuariosController = (
     showError(error);
   }, [showError]);
 
-  // Estadísticas calculadas
-  const estadisticas = {
+  // Estadísticas del backend (si están disponibles) o calculadas como fallback
+  const usuariosAdmins = usuarios.filter(u => {
+    // Revisar en el array de roles
+    if (u.roles && u.roles.length > 0) {
+      return u.roles.some(rol => 
+        rol === 'Admin' || 
+        rol === 'Administrador' || 
+        rol === 'SuperAdmin' || 
+        rol === 'Super Admin'
+      );
+    }
+    // Fallback al rol individual
+    return u.rol === 'Admin' || u.rol === 'Administrador' || u.rol === 'SuperAdmin';
+  }).length;
+
+  const estadisticas = estadisticasBackend ? {
+    ...estadisticasBackend,
+    usuariosAdmins // Agregar campo calculado localmente
+  } : {
     totalUsuarios: totalCount,
     usuariosActivos: usuarios.filter(u => u.estado === 'Activo').length,
     usuariosInactivos: usuarios.filter(u => u.estado === 'Inactivo').length,
-    usuariosAdmins: usuarios.filter(u => {
-      // Revisar en el array de roles
-      if (u.roles && u.roles.length > 0) {
-        return u.roles.some(rol => 
-          rol === 'Admin' || 
-          rol === 'Administrador' || 
-          rol === 'SuperAdmin' || 
-          rol === 'Super Admin'
-        );
-      }
-      // Fallback al rol individual
-      return u.rol === 'Admin' || u.rol === 'Administrador' || u.rol === 'SuperAdmin';
-    }).length,
+    usuariosForzarCambio: 0,
+    usuariosPendientesCambioContrasena: 0,
+    usuariosExtranjeros: usuarios.filter(u => u.extranjero).length,
+    usuariosConJefe: usuarios.filter(u => u.manager).length,
+    porcentajeActivos: totalCount > 0 ? Math.round((usuarios.filter(u => u.estado === 'Activo').length / totalCount) * 100) : 0,
+    porcentajeExtranjeros: totalCount > 0 ? Math.round((usuarios.filter(u => u.extranjero).length / totalCount) * 100) : 0,
+    usuariosAdmins
   };
 
   return {

@@ -13,7 +13,7 @@ import type {
 // ============================================================================
 
 class AuditoriaService {
-  private readonly baseUrl = '/api/auditoria';
+  private readonly baseUrl = '/auditoria';
 
   // ===== MÉTODOS PRINCIPALES =====
 
@@ -203,6 +203,9 @@ class AuditoriaService {
     if (filtros.severidad) {
       params.severidad = filtros.severidad;
     }
+    if (filtros.tablaAfectada) {
+      params.tablaAfectada = filtros.tablaAfectada;
+    }
 
     // Filtros de fecha
     if (filtros.fechaDesde) {
@@ -225,9 +228,13 @@ class AuditoriaService {
 
   /**
    * Formatea una fecha para mostrar en la UI
+   * Convierte de UTC (backend) a zona horaria local del navegador
    */
   formatearFecha(fechaISO: string): string {
-    const fecha = new Date(fechaISO);
+    // Asegurar que JavaScript interprete la fecha como UTC
+    const fechaUTC = fechaISO.endsWith('Z') ? fechaISO : fechaISO + 'Z';
+    const fecha = new Date(fechaUTC);
+    
     return fecha.toLocaleDateString('es-ES', {
       year: 'numeric',
       month: '2-digit',

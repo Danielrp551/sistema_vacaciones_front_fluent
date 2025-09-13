@@ -20,6 +20,17 @@ export const TipoAccionAuditoria = {
   ASIGNAR_JEFE: 'ASIGNAR_JEFE',
   REMOVER_JEFE: 'REMOVER_JEFE',
   
+  // Gestión de Roles
+  CREAR_ROL: 'CREAR_ROL',
+  EDITAR_ROL: 'EDITAR_ROL',
+  ELIMINAR_ROL: 'ELIMINAR_ROL',
+  MODIFICAR_PERMISOS_ROL: 'MODIFICAR_PERMISOS_ROL',
+  
+  // Gestión de Permisos
+  CreacionPermiso: 'CreacionPermiso',
+  ActualizacionPermiso: 'ActualizacionPermiso',
+  EliminacionPermiso: 'EliminacionPermiso',
+  
   // Autenticación
   LOGIN_EXITOSO: 'LOGIN_EXITOSO',
   LOGIN_FALLIDO: 'LOGIN_FALLIDO',
@@ -45,6 +56,8 @@ export const TipoAccionAuditoria = {
 export const ModuloSistema = {
   AUTENTICACION: 'AUTENTICACION',
   GESTION_USUARIOS: 'GESTION_USUARIOS',
+  GESTION_ROLES: 'GESTION_ROLES',
+  GESTION_PERMISOS: 'GESTION_PERMISOS',
   SOLICITUDES_VACACIONES: 'SOLICITUDES_VACACIONES',
   HISTORIAL_VACACIONES: 'HISTORIAL_VACACIONES',
   SALDOS_VACACIONES: 'SALDOS_VACACIONES',
@@ -87,8 +100,10 @@ export interface AuditoriaCompleta extends AuditoriaSimple {
   tablaAfectada?: string;
   registroAfectadoId?: string;
   usuarioEjecutorId: string;
+  usuarioEjecutorNombre?: string;
   usuarioEjecutorEmail?: string;
   usuarioAfectadoId?: string;
+  usuarioAfectadoNombre?: string;
   usuarioAfectadoEmail?: string;
   mensajeDetallado: string;
   mensajePlantilla: string;
@@ -130,6 +145,7 @@ export interface FiltrosAuditoria {
   fechaHasta?: Date;
   modulo?: ModuloSistemaType;
   severidad?: SeveridadAuditoriaType;
+  tablaAfectada?: string;
   ordenarPor?: 'fechaHora' | 'tipoAccion' | 'modulo' | 'usuarioEjecutor';
   ordenDescendente?: boolean;
 }

@@ -12,10 +12,10 @@ import {
   MessageBarType
 } from '@fluentui/react';
 import { DataTable, type DataTableColumn } from '../DataTable/DataTable';
-import { useAuditoriaGestionUsuarios } from '../../hooks/auditoria';
+import { useAuditoria } from '../../hooks/auditoria';
 import auditoriaService from '../../services/auditoria.service';
-import { SEVERIDAD_CONFIG } from '../../utils/auditoria.constants';
-import type { AuditoriaSimple } from '../../types/auditoria';
+import { SEVERIDAD_CONFIG, PAGINACION_DEFAULT } from '../../utils/auditoria.constants';
+import type { AuditoriaSimple, ModuloSistemaType } from '../../types/auditoria';
 
 // ============================================================================
 // INTERFACES
@@ -23,10 +23,21 @@ import type { AuditoriaSimple } from '../../types/auditoria';
 
 export interface HistorialAuditoriaProps {
   /**
-   * ID del usuario para filtrar el historial (opcional)
-   * Si no se proporciona, muestra todo el historial de gestión de usuarios
+   * Módulo del sistema para filtrar el historial
    */
-  usuarioId?: string;
+  modulo?: ModuloSistemaType;
+  
+  /**
+   * Tabla afectada para filtrar el historial (opcional)
+   * Por ejemplo: "AspNetUsers", "AspNetRoles", "SolicitudesVacaciones", etc.
+   */
+  tablaAfectada?: string;
+  
+  /**
+   * ID del registro/usuario para filtrar el historial (opcional)
+   * El significado depende del módulo (usuarioId, solicitudId, etc.)
+   */
+  filtroId?: string;
   
   /**
    * Título personalizado para el componente
@@ -47,6 +58,14 @@ export interface HistorialAuditoriaProps {
    * Callback cuando se selecciona un registro para ver detalles
    */
   onVerDetalle?: (registro: AuditoriaSimple) => void;
+  
+  /**
+   * Mensajes personalizados para estado vacío
+   */
+  mensajesVacios?: {
+    titulo: string;
+    mensaje: string;
+  };
 }
 
 interface DetalleCalloutState {
@@ -60,10 +79,13 @@ interface DetalleCalloutState {
 // ============================================================================
 
 export const HistorialAuditoria: React.FC<HistorialAuditoriaProps> = ({
-  usuarioId,
+  modulo,
+  tablaAfectada,
+  filtroId,
   titulo = 'Historial de Auditoría',
-  tamanoPagina = 15,
-  onVerDetalle
+  tamanoPagina = 10,
+  onVerDetalle,
+  mensajesVacios
 }) => {
   
   // ===== HOOKS =====
@@ -75,8 +97,18 @@ export const HistorialAuditoria: React.FC<HistorialAuditoriaProps> = ({
     error,
     irAPagina,
     recargar,
-    limpiarError
-  } = useAuditoriaGestionUsuarios(usuarioId);
+    limpiarError,
+    aplicarFiltros,
+    filtrosActuales
+  } = useAuditoria({
+    modulo,
+    usuarioId: filtroId, // Por compatibilidad con el hook actual
+    tamanoPaginaInicial: tamanoPagina,
+    cargarAutomaticamente: true,
+    filtrosIniciales: {
+      tablaAfectada
+    }
+  });
 
   // ===== ESTADO LOCAL =====
   const [detalleCallout, setDetalleCallout] = useState<DetalleCalloutState>({
@@ -86,6 +118,13 @@ export const HistorialAuditoria: React.FC<HistorialAuditoriaProps> = ({
   });
 
   // ===== FUNCIONES =====
+
+  const cambiarTamanoPagina = async (nuevoTamano: number) => {
+    await aplicarFiltros({
+      tamanoPagina: nuevoTamano,
+      pagina: 1 // Resetear a la primera página cuando se cambia el tamaño
+    });
+  };
 
   const mostrarDetalle = (registro: AuditoriaSimple, target: HTMLElement) => {
     setDetalleCallout({
@@ -138,6 +177,7 @@ export const HistorialAuditoria: React.FC<HistorialAuditoriaProps> = ({
   const renderUsuario = (registro: AuditoriaSimple): React.ReactNode => {
     return (
       <Persona
+        key={`usuario-${registro.id}`}
         text={registro.usuarioEjecutor}
         secondaryText={registro.usuarioAfectado || undefined}
         size={PersonaSize.size32}
@@ -155,7 +195,7 @@ export const HistorialAuditoria: React.FC<HistorialAuditoriaProps> = ({
     
     if (!config) {
       return (
-        <Text style={{ fontSize: '12px', color: '#605e5c' }}>
+        <Text key={`severidad-${registro.id}`} style={{ fontSize: '12px', color: '#605e5c' }}>
           {registro.severidad}
         </Text>
       );
@@ -163,6 +203,7 @@ export const HistorialAuditoria: React.FC<HistorialAuditoriaProps> = ({
 
     return (
       <span
+        key={`severidad-badge-${registro.id}`}
         style={{
           backgroundColor: config.bgColor.replace('bg-', '').replace('-50', '#f3f4f6').replace('-100', '#e5e7eb'),
           color: config.textColor.replace('text-', '').replace('-700', '#374151').replace('-800', '#1f2937'),
@@ -358,18 +399,21 @@ export const HistorialAuditoria: React.FC<HistorialAuditoriaProps> = ({
         items={registros}
         columns={columns}
         isLoading={isLoading}
-        emptyStateTitle="No hay registros de auditoría"
+        emptyStateTitle={mensajesVacios?.titulo || "No hay registros de auditoría"}
         emptyStateMessage={
-          usuarioId 
-            ? "No se encontraron registros para este usuario específico"
-            : "No se encontraron registros de auditoría en el sistema"
+          mensajesVacios?.mensaje || (
+            filtroId 
+              ? "No se encontraron registros para el filtro aplicado"
+              : "No se encontraron registros de auditoría en el sistema"
+          )
         }
         pagination={{
           currentPage: paginaActual,
           totalItems: totalRegistros,
-          pageSize: tamanoPagina,
+          pageSize: filtrosActuales.tamanoPagina || tamanoPagina,
+          pageSizeOptions: [...PAGINACION_DEFAULT.OPCIONES_TAMANO_PAGINA],
           onPageChange: irAPagina,
-          onPageSizeChange: () => {}, // Por ahora vacío, se puede implementar después
+          onPageSizeChange: cambiarTamanoPagina,
           itemName: 'registros'
         }}
       />

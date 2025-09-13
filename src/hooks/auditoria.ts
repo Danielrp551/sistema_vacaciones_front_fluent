@@ -6,6 +6,9 @@
 export {
   useAuditoria,
   useAuditoriaGestionUsuarios,
+  useAuditoriaSolicitudesVacaciones,
+  useAuditoriaConfiguracion,
+  useAuditoriaReportes,
   useEstadisticasAuditoria
 } from './useAuditoria';
 

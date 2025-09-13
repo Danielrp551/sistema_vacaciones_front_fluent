@@ -7,6 +7,8 @@ import Dashboard from '../pages/Dashboard/Dashboard';
 import GestionSolicitudes from '../pages/GestionSolicitudes/GestionSolicitudes';
 import SaldosVacaciones from '../pages/SaldosVacaciones/SaldosVacaciones';
 import GestionUsuarios from '../pages/GestionUsuarios/GestionUsuarios';
+import GestionRoles from '../pages/GestionRoles/GestionRoles';
+import GestionPermisos from '../pages/GestionPermisos/GestionPermisos';
 import LayoutRoute from './LayoutRoute'; 
 
 const AppRouter = () => {
@@ -29,6 +31,8 @@ const AppRouter = () => {
           
           {/* Rutas de Administración */}
           <Route path="/administracion/usuarios" element={<LayoutRoute><GestionUsuarios /></LayoutRoute>} />
+          <Route path="/administracion/roles" element={<LayoutRoute><GestionRoles /></LayoutRoute>} />
+          <Route path="/administracion/permisos" element={<LayoutRoute><GestionPermisos /></LayoutRoute>} />
           <Route path="/administracion/departamentos" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
           <Route path="/administracion/configuracion" element={<LayoutRoute><Dashboard /></LayoutRoute>} />
           

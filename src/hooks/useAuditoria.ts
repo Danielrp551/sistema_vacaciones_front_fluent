@@ -129,23 +129,33 @@ export function useAuditoria(options: UseAuditoriaOptions = {}): UseAuditoriaRet
       
       let resultado: AuditoriaSimplePaginada;
       
-      if (modulo) {
-        // Si hay un módulo específico, usar el endpoint optimizado
+      // Verificar si hay filtros específicos que requieren el endpoint general
+      const tieneRecursosFiltrosEspecificos = 
+        filtros.tablaAfectada || 
+        filtros.tipoAccion || 
+        filtros.severidad || 
+        filtros.fechaDesde || 
+        filtros.fechaHasta ||
+        filtros.ordenarPor ||
+        filtros.ordenDescendente !== undefined;
+
+      if (modulo === 'GESTION_USUARIOS' && !tieneRecursosFiltrosEspecificos) {
+        // Solo usar el endpoint optimizado para GESTION_USUARIOS sin filtros específicos
         resultado = await auditoriaService.obtenerHistorialGestionUsuariosSimple(
           filtros.pagina || 1,
           filtros.tamanoPagina || tamanoPaginaInicial,
           filtros.usuarioId
         );
       } else {
-        // Usar endpoint general (necesitaría implementar versión simple)
+        // Usar endpoint general para todos los demás casos
         const resultadoCompleto = await auditoriaService.obtenerHistorial(filtros);
         // Convertir a formato simple
         resultado = {
           registros: resultadoCompleto.registros.map(r => ({
             id: r.id,
             accion: r.mensajeCorto,
-            usuarioEjecutor: r.usuarioEjecutor,
-            usuarioAfectado: r.usuarioAfectado,
+            usuarioEjecutor: r.usuarioEjecutorNombre || 'Usuario desconocido',
+            usuarioAfectado: r.usuarioAfectadoNombre,
             mensajeCorto: r.mensajeCorto,
             motivo: r.motivo,
             fechaHora: r.fechaHora,
@@ -170,33 +180,54 @@ export function useAuditoria(options: UseAuditoriaOptions = {}): UseAuditoriaRet
     try {
       setState(prevState => ({ ...prevState, isLoading: true, error: null }));
       
-      const resultado = await auditoriaService.obtenerHistorial(nuevosFiltros);
+      let resultado: AuditoriaSimplePaginada;
       
-      // Convertir a formato simple
-      const resultadoSimple: AuditoriaSimplePaginada = {
-        registros: resultado.registros.map(r => ({
-          id: r.id,
-          accion: r.mensajeCorto,
-          usuarioEjecutor: r.usuarioEjecutor,
-          usuarioAfectado: r.usuarioAfectado,
-          mensajeCorto: r.mensajeCorto,
-          motivo: r.motivo,
-          fechaHora: r.fechaHora,
-          severidad: r.severidad.toString(),
-          ipAddress: r.ipAddress
-        })),
-        totalRegistros: resultado.totalRegistros,
-        paginaActual: resultado.paginaActual,
-        totalPaginas: resultado.totalPaginas,
-        tienePaginaAnterior: resultado.tienePaginaAnterior,
-        tienePaginaSiguiente: resultado.tienePaginaSiguiente
-      };
+      // Verificar si hay filtros específicos que requieren el endpoint general
+      const tieneRecursosFiltrosEspecificos = 
+        nuevosFiltros.tablaAfectada || 
+        nuevosFiltros.tipoAccion || 
+        nuevosFiltros.severidad || 
+        nuevosFiltros.fechaDesde || 
+        nuevosFiltros.fechaHasta ||
+        nuevosFiltros.ordenarPor ||
+        nuevosFiltros.ordenDescendente !== undefined;
+
+      if (modulo === 'GESTION_USUARIOS' && !tieneRecursosFiltrosEspecificos) {
+        // Solo usar el endpoint optimizado para GESTION_USUARIOS sin filtros específicos
+        resultado = await auditoriaService.obtenerHistorialGestionUsuariosSimple(
+          nuevosFiltros.pagina || 1,
+          nuevosFiltros.tamanoPagina || tamanoPaginaInicial,
+          nuevosFiltros.usuarioId
+        );
+      } else {
+        // Usar endpoint general para todos los demás casos
+        const resultadoCompleto = await auditoriaService.obtenerHistorial(nuevosFiltros);
+        // Convertir a formato simple
+        resultado = {
+          registros: resultadoCompleto.registros.map(r => ({
+            id: r.id,
+            accion: r.mensajeCorto,
+            usuarioEjecutor: r.usuarioEjecutorNombre || 'Usuario desconocido',
+            usuarioAfectado: r.usuarioAfectadoNombre,
+            mensajeCorto: r.mensajeCorto,
+            motivo: r.motivo,
+            fechaHora: r.fechaHora,
+            severidad: r.severidad.toString(),
+            ipAddress: r.ipAddress
+          })),
+          totalRegistros: resultadoCompleto.totalRegistros,
+          paginaActual: resultadoCompleto.paginaActual,
+          totalPaginas: resultadoCompleto.totalPaginas,
+          tienePaginaAnterior: resultadoCompleto.tienePaginaAnterior,
+          tienePaginaSiguiente: resultadoCompleto.tienePaginaSiguiente
+        };
+      }
       
-      actualizarEstado(resultadoSimple);
+      actualizarEstado(resultado);
     } catch (error) {
       manejarError(error);
     }
-  }, [actualizarEstado, manejarError]);
+  }, [modulo, tamanoPaginaInicial, actualizarEstado, manejarError]);
 
   // ===== NAVEGACIÓN =====
 
@@ -305,7 +336,42 @@ export function useAuditoriaGestionUsuarios(usuarioId?: string) {
   return useAuditoria({
     modulo: 'GESTION_USUARIOS' as ModuloSistemaType,
     usuarioId,
-    tamanoPaginaInicial: 15,
+    tamanoPaginaInicial: PAGINACION_DEFAULT.TAMANO_PAGINA_DEFAULT,
+    cargarAutomaticamente: true
+  });
+}
+
+/**
+ * Hook específico para auditoría de solicitudes de vacaciones
+ */
+export function useAuditoriaSolicitudesVacaciones(solicitudId?: string) {
+  return useAuditoria({
+    modulo: 'SOLICITUDES_VACACIONES' as ModuloSistemaType,
+    usuarioId: solicitudId, // Reutilizamos el parámetro usuarioId como filtro genérico
+    tamanoPaginaInicial: PAGINACION_DEFAULT.TAMANO_PAGINA_DEFAULT,
+    cargarAutomaticamente: true
+  });
+}
+
+/**
+ * Hook específico para auditoría de configuración del sistema
+ */
+export function useAuditoriaConfiguracion() {
+  return useAuditoria({
+    modulo: 'CONFIGURACION' as ModuloSistemaType,
+    tamanoPaginaInicial: PAGINACION_DEFAULT.TAMANO_PAGINA_DEFAULT,
+    cargarAutomaticamente: true
+  });
+}
+
+/**
+ * Hook específico para auditoría de reportes
+ */
+export function useAuditoriaReportes(reporteId?: string) {
+  return useAuditoria({
+    modulo: 'REPORTES' as ModuloSistemaType,
+    usuarioId: reporteId, // Reutilizamos el parámetro usuarioId como filtro genérico
+    tamanoPaginaInicial: PAGINACION_DEFAULT.TAMANO_PAGINA_DEFAULT,
     cargarAutomaticamente: true
   });
 }

@@ -33,7 +33,8 @@ export const useUsuariosAdmin = () => {
     currentPage: 1,
     pageSize: 10,
     hasNextPage: false,
-    hasPreviousPage: false
+    hasPreviousPage: false,
+    estadisticas: null
   });
 
   const [query, setQuery] = useState<UsuariosAdminQueryObject>({
@@ -54,11 +55,12 @@ export const useUsuariosAdmin = () => {
       setState(prev => ({
         ...prev,
         usuarios: response.usuarios,
-        totalCount: response.total,
+        totalCount: response.totalCompleto, // ✅ Corregido: usar totalCompleto para paginación
         currentPage: response.paginaActual,
         pageSize: response.tamanoPagina,
         hasNextPage: response.tienePaginaSiguiente,
         hasPreviousPage: response.tienePaginaAnterior,
+        estadisticas: response.estadisticas, // ✅ Capturar estadísticas del backend
         loading: false
       }));
       

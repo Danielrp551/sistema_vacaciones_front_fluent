@@ -192,7 +192,11 @@ export interface UsuariosEstadisticas {
   usuariosActivos: number;
   usuariosInactivos: number;
   usuariosForzarCambio: number;
+  usuariosPendientesCambioContrasena: number;
   usuariosExtranjeros: number;
+  usuariosConJefe: number;
+  porcentajeActivos: number;
+  porcentajeExtranjeros: number;
 }
 
 export interface UsuariosAdminResponse {
@@ -297,6 +301,7 @@ export interface UsuarioAdminTableState {
   pageSize: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
+  estadisticas: UsuariosEstadisticas | null;
 }
 
 export interface UsuarioFormState {

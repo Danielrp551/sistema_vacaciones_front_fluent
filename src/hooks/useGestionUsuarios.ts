@@ -137,8 +137,8 @@ export const useGestionUsuarios = () => {
     createUsuario,
     
     // Limpiar errores
-    clearCreateUsuarioError: () => setCreateUsuarioError(null),
-    clearCreateUsuarioFieldErrors: () => setCreateUsuarioFieldErrors({}),
+    clearCreateUsuarioError: useCallback(() => setCreateUsuarioError(null), []),
+    clearCreateUsuarioFieldErrors: useCallback(() => setCreateUsuarioFieldErrors({}), []),
   };
 };
 
@@ -177,7 +177,7 @@ export const useUsuariosDropdowns = () => {
     loading,
     error,
     fetchDropdowns,
-    clearError: () => setError(null),
+    clearError: useCallback(() => setError(null), []),
   };
 };
 
@@ -226,7 +226,7 @@ export const useUsuarioDetalle = () => {
     getUsuario,
     mapToFormData,
     clearUsuario,
-    clearError: () => setError(null),
+    clearError: useCallback(() => setError(null), []),
   };
 };
 
@@ -305,8 +305,8 @@ export const useUpdateUsuario = () => {
     updateUsuario,
     
     // Limpiar errores
-    clearUpdateUsuarioError: () => setUpdateUsuarioError(null),
-    clearUpdateUsuarioFieldErrors: () => setUpdateUsuarioFieldErrors({}),
+    clearUpdateUsuarioError: useCallback(() => setUpdateUsuarioError(null), []),
+    clearUpdateUsuarioFieldErrors: useCallback(() => setUpdateUsuarioFieldErrors({}), []),
   };
 };
 
@@ -349,7 +349,7 @@ export const useToggleUserStatus = () => {
     toggleUserStatus,
     
     // Limpiar errores
-    clearToggleUserStatusError: () => setToggleUserStatusError(null),
+    clearToggleUserStatusError: useCallback(() => setToggleUserStatusError(null), []),
   };
 };
 
@@ -389,6 +389,6 @@ export const useResetPassword = () => {
     resetPassword,
     
     // Limpiar errores
-    clearResetPasswordError: () => setResetPasswordError(null),
+    clearResetPasswordError: useCallback(() => setResetPasswordError(null), []),
   };
 };

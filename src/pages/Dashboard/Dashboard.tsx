@@ -12,6 +12,7 @@ import {
 import type { IContextualMenuItem } from '@fluentui/react';
 import { DataTable, StatusBadge, formatDate } from '../../components/DataTable';
 import type { DataTableColumn } from '../../components/DataTable';
+import { Drawer } from '../../components/Common/Drawer';
 import { useDashboardController } from './Dashboard.controller';
 import type { SolicitudVacacionesDetailDto } from '../../services/solicitudVacaciones.service';
 import {
@@ -47,6 +48,9 @@ const Dashboard: React.FC = () => {
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [contextMenuTarget, setContextMenuTarget] = useState<HTMLElement | null>(null);
   const [contextMenuSolicitud, setContextMenuSolicitud] = useState<SolicitudVacacionesDetailDto | null>(null);
+
+  // Estado para drawer de prueba
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Manejar click en menú de acciones
   const handleMenuClick = (event: React.MouseEvent<any>, solicitud: SolicitudVacacionesDetailDto) => {
@@ -306,6 +310,11 @@ const Dashboard: React.FC = () => {
             onClick={refreshData}
             disabled={isLoading}
           />
+          <PrimaryButton 
+            text="Probar Drawer" 
+            iconProps={{ iconName: 'SidePanel' }} 
+            onClick={() => setDrawerOpen(true)}
+          />
         </Stack>
 
         {/* Tabla de solicitudes recientes */}
@@ -333,6 +342,41 @@ const Dashboard: React.FC = () => {
           </Stack>
         </Stack>
       </Stack>
+
+      {/* Drawer de prueba */}
+      <Drawer
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        title="Drawer de Prueba"
+        width={500}
+      >
+        <Stack tokens={{ childrenGap: 16 }}>
+          <Text variant="xLarge" styles={{ root: { fontWeight: '600' } }}>
+            ¡Hola desde el Drawer!
+          </Text>
+          <Text variant="medium">
+            Este es un componente Drawer reutilizable construido con Fluent UI que puede contener cualquier contenido.
+          </Text>
+          <Stack tokens={{ childrenGap: 12 }}>
+            <Text variant="mediumPlus" styles={{ root: { fontWeight: '600' } }}>
+              Características:
+            </Text>
+            <Stack tokens={{ childrenGap: 8 }} styles={{ root: { paddingLeft: '16px' } }}>
+              <Text variant="medium">• Se abre desde la derecha</Text>
+              <Text variant="medium">• Ancho personalizable</Text>
+              <Text variant="medium">• Título configurable</Text>
+              <Text variant="medium">• Contenido mediante children</Text>
+              <Text variant="medium">• Cierre con ESC o clic fuera</Text>
+              <Text variant="medium">• Basado en Fluent UI Panel</Text>
+            </Stack>
+          </Stack>
+          <PrimaryButton 
+            text="Cerrar Drawer" 
+            onClick={() => setDrawerOpen(false)}
+            iconProps={{ iconName: 'Cancel' }}
+          />
+        </Stack>
+      </Drawer>
 
       {/* Menú contextual */}
       {contextMenuVisible && (
