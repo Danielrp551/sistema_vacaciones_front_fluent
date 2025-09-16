@@ -42,6 +42,14 @@ export const useSolVacacionesController = () => {
     return today;
   };
 
+  // Formatear fecha para API sin conversión UTC (soluciona problema de zona horaria)
+  const formatDateForAPI = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Cargar historial al montar el componente
   useEffect(() => {
     loadHistorial();
@@ -174,8 +182,8 @@ export const useSolVacacionesController = () => {
       const solicitudPayload: CreateSolicitudRequestDto = {
         tipoVacaciones: vacationRequest.tipoVacaciones,
         diasSolicitados: vacationRequest.diasSolicitados,
-        fechaInicio: vacationRequest.fechaInicio.toISOString().split('T')[0],
-        fechaFin: vacationRequest.fechaFin.toISOString().split('T')[0],
+        fechaInicio: formatDateForAPI(vacationRequest.fechaInicio!),
+        fechaFin: formatDateForAPI(vacationRequest.fechaFin!),
         periodo: selectedPeriod.periodo,
         observaciones: vacationRequest.observaciones,
       };
