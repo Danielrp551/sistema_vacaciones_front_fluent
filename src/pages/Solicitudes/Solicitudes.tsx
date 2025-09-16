@@ -89,7 +89,7 @@ const Solicitudes: React.FC = () => {
     { key: 'pendiente', text: 'Pendiente' },
     { key: 'aprobado', text: 'Aprobado' },
     { key: 'rechazado', text: 'Rechazado' },
-    { key: 'cancelado', text: 'Cancelado' },
+    { key: 'cancelada', text: 'Cancelado' },
   ];
 
   const tipoVacacionesOptions: IDropdownOption[] = [
@@ -147,40 +147,6 @@ const Solicitudes: React.FC = () => {
           />
         );
       },
-    },
-    {
-      key: 'id',
-      name: 'ID',
-      fieldName: 'id',
-      minWidth: 60,
-      maxWidth: 80,
-      isResizable: false,
-      data: 'number',
-      isPadded: true,
-      isSorted: sortConfig?.key === 'id',
-      isSortedDescending: sortConfig?.key === 'id' && sortConfig?.direction === 'descending',
-      onRender: (item: SolicitudVacacionesDetailDto) => (
-        <Text variant="medium" styles={{ root: { fontWeight: '600' } }}>
-          #{item.id}
-        </Text>
-      ),
-    },
-    {
-      key: 'solicitante',
-      name: 'Solicitante',
-      fieldName: 'nombreSolicitante',
-      minWidth: 120,
-      maxWidth: 160,
-      isResizable: false,
-      data: 'string',
-      isPadded: true,
-      isSorted: sortConfig?.key === 'solicitante',
-      isSortedDescending: sortConfig?.key === 'solicitante' && sortConfig?.direction === 'descending',
-      onRender: (item: SolicitudVacacionesDetailDto) => (
-        <Text variant="medium" styles={{ root: { fontWeight: '500' } }}>
-          {item.nombreSolicitante}
-        </Text>
-      ),
     },
     {
       key: 'tipoVacaciones',

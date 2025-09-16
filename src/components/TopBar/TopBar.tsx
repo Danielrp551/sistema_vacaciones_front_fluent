@@ -9,7 +9,8 @@ import { styles } from './TopBar.styles';
 const TopBar = () => {
   const { 
     onMenuClick, 
-    onProfileClick 
+    onProfileClick,
+    getUserInitials
   } = useTopBarController();
 
   return (
@@ -33,7 +34,7 @@ const TopBar = () => {
         <Stack horizontal verticalAlign="center" styles={styles.rightSection}>
           {/* Avatar del usuario */}
           <Stack styles={styles.avatar} verticalAlign="center" horizontalAlign="center">
-            <Text styles={styles.avatarText}>DT</Text>
+            <Text styles={styles.avatarText}>{getUserInitials()}</Text>
           </Stack>
           
           {/* Icono de casa */}

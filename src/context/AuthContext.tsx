@@ -4,8 +4,17 @@ import type { AuthResponse } from '../services/auth.service';
 
 export interface AuthUser {
   userName?: string;
+  email?: string;
   roles?: string[];
   permisos?: string[];
+  persona?: {
+    nombres: string;
+    apellidoPaterno: string;
+    apellidoMaterno: string;
+    dni: string;
+    telefono: string;
+    fechaIngreso: string;
+  };
 }
 
 interface AuthContextValue {
@@ -35,8 +44,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const currentUser = await AuthService.getCurrentUser();
           setUser({
             userName: currentUser.userName,
+            email: currentUser.email,
             roles: currentUser.roles,
-            permisos: currentUser.permisos
+            permisos: currentUser.permisos,
+            persona: {
+              nombres: currentUser.persona.nombres,
+              apellidoPaterno: currentUser.persona.apellidoPaterno,
+              apellidoMaterno: currentUser.persona.apellidoMaterno,
+              dni: currentUser.persona.dni,
+              telefono: currentUser.persona.telefono,
+              fechaIngreso: currentUser.persona.fechaIngreso,
+            }
           });
         } catch (error) {
           console.error('Error al cargar datos del usuario:', error);
@@ -59,11 +77,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const res: AuthResponse = await AuthService.login({ username, password });
     localStorage.setItem('token', res.token);
     setToken(res.token);
-    setUser({ 
-      userName: res.userName, 
-      roles: res.roles,
-      permisos: res.permisos || []
-    });
+    
+    // Obtener información completa del usuario después del login
+    try {
+      const currentUser = await AuthService.getCurrentUser();
+      setUser({
+        userName: currentUser.userName,
+        email: currentUser.email,
+        roles: currentUser.roles,
+        permisos: currentUser.permisos,
+        persona: {
+          nombres: currentUser.persona.nombres,
+          apellidoPaterno: currentUser.persona.apellidoPaterno,
+          apellidoMaterno: currentUser.persona.apellidoMaterno,
+          dni: currentUser.persona.dni,
+          telefono: currentUser.persona.telefono,
+          fechaIngreso: currentUser.persona.fechaIngreso,
+        }
+      });
+    } catch (error) {
+      // Fallback si no se pueden obtener los datos completos
+      setUser({ 
+        userName: res.userName, 
+        roles: res.roles,
+        permisos: res.permisos || []
+      });
+    }
   };
 
   const logout = () => {

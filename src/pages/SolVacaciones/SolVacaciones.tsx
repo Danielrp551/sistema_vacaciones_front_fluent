@@ -15,10 +15,25 @@ import {
   IconButton,
   TextField,
 } from '@fluentui/react';
-import type { IColumn } from '@fluentui/react';
+import type { IColumn, IDatePickerStrings } from '@fluentui/react';
 import { useSolVacacionesController } from './SolVacaciones.controller';
 import { styles } from './SolVacaciones.styles';
 import type { HistorialVacacionesDto } from '../../services/historialVacaciones.service';
+
+// Configuración de idioma español para DatePicker
+const datePickerStrings: IDatePickerStrings = {
+  months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+  shortMonths: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+  days: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+  shortDays: ['D', 'L', 'M', 'X', 'J', 'V', 'S'],
+  goToToday: 'Ir a hoy',
+  weekNumberFormatString: 'Semana {0}',
+  prevMonthAriaLabel: 'Mes anterior',
+  nextMonthAriaLabel: 'Mes siguiente',
+  prevYearAriaLabel: 'Año anterior',
+  nextYearAriaLabel: 'Año siguiente',
+  invalidInputErrorMessage: 'Formato de fecha inválido.',
+};
 
 const SolVacaciones = () => {
   const {
@@ -212,6 +227,7 @@ const SolVacaciones = () => {
                 onSelectDate={(date) => handleInputChange('fechaInicio', date)}
                 firstDayOfWeek={DayOfWeek.Monday}
                 formatDate={(date) => date ? date.toLocaleDateString('es-ES') : ''}
+                strings={datePickerStrings}
                 allowTextInput={false}
                 isRequired={showValidation}
                 minDate={getMinDate()}
@@ -227,6 +243,7 @@ const SolVacaciones = () => {
                 onSelectDate={() => {}} // No hacer nada, es solo lectura
                 firstDayOfWeek={DayOfWeek.Monday}
                 formatDate={(date) => date ? date.toLocaleDateString('es-ES') : ''}
+                strings={datePickerStrings}
                 disabled
                 allowTextInput={false}
               />
@@ -236,13 +253,12 @@ const SolVacaciones = () => {
             <Stack styles={styles.fullWidthField}>
               <TextField
                 label="Observaciones (opcional)"
-                placeholder="Ej: Solicito estas vacaciones por motivos familiares..."
+                placeholder="Escriba aquí cualquier comentario adicional sobre su solicitud..."
                 value={vacationRequest.observaciones}
                 onChange={(_, newValue) => handleInputChange('observaciones', newValue || '')}
                 multiline
                 rows={3}
                 maxLength={1000}
-                description="Puedes agregar comentarios sobre tu solicitud de vacaciones (máximo 1000 caracteres)"
               />
             </Stack>
           </Stack>

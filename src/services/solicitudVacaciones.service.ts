@@ -21,7 +21,7 @@ export interface SolicitudVacacionesDto {
   diasSolicitados: number;
   fechaInicio: string; // ISO date string
   fechaFin: string; // ISO date string
-  estado: string; // "pendiente", "aprobado", "rechazado", "cancelado"
+  estado: string; // "pendiente", "aprobado", "rechazado", "cancelada"
   fechaSolicitud: string; // ISO date string
   periodo: number; // 2020, 2021, 2022, etc.
   diasFinde: number; // Cantidad de días de fin de semana en el rango de fechas

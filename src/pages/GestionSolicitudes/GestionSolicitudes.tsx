@@ -108,7 +108,7 @@ const GestionSolicitudes: React.FC = () => {
     { key: 'pendiente', text: 'Pendiente' },
     { key: 'aprobado', text: 'Aprobado' },
     { key: 'rechazado', text: 'Rechazado' },
-    { key: 'cancelado', text: 'Cancelado' },
+    { key: 'cancelada', text: 'Cancelado' },
   ];
 
   const tipoVacacionesOptions: IDropdownOption[] = [
@@ -1187,7 +1187,7 @@ const GestionSolicitudes: React.FC = () => {
                       { key: 'pendiente', text: 'Pendiente' },
                       { key: 'aprobado', text: 'Aprobado' },
                       { key: 'rechazado', text: 'Rechazado' },
-                      { key: 'cancelado', text: 'Cancelado' },
+                      { key: 'cancelada', text: 'Cancelado' },
                     ]}
                     disabled
                     styles={{
