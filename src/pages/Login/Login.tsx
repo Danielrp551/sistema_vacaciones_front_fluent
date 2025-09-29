@@ -68,9 +68,10 @@ const Login = () => {
               marginTop: '24px', 
               textAlign: 'center', 
               display: 'flex', 
+              flexDirection: 'column',
               alignItems: 'center', 
               justifyContent: 'center', 
-              gap: '6px',
+              gap: '8px',
               opacity: 0.7,
               fontSize: '12px',
               color: '#666'
@@ -79,9 +80,8 @@ const Login = () => {
               <img 
                 src="/logo-vacapp.jpeg" 
                 alt="VacApp" 
-                style={{ width: 16, height: 16, objectFit: 'contain', borderRadius: '2px' }}
+                style={{ width: 60, height:60, objectFit: 'contain', borderRadius: '6px' }}
               />
-              <span style={{ fontWeight: 500 }}>VacApp</span>
             </div>
           </Stack>
         </form>
