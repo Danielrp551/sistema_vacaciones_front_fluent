@@ -30,7 +30,6 @@ import {
   filtersContainerStyles,
   statsGridStyles,
   statCardStyles,
-  statNumberStyles,
   statLabelStyles,
   listContainerStyles,
   tableContainerStyles,
