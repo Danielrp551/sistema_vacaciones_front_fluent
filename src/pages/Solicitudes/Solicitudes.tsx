@@ -390,32 +390,10 @@ const Solicitudes: React.FC = () => {
         styles={statsGridStyles}
       >
         <Stack styles={statCardStyles}>
-          <Text styles={statNumberStyles}>{stats.total}</Text>
-          <Text styles={statLabelStyles}>Total</Text>
-        </Stack>
-        <Stack styles={statCardStyles}>
           <Text styles={{ root: { fontSize: '24px', fontWeight: '600', color: '#d83b01', margin: '0 0 4px 0' } }}>
             {stats.pendientes}
           </Text>
           <Text styles={statLabelStyles}>Pendientes</Text>
-        </Stack>
-        <Stack styles={statCardStyles}>
-          <Text styles={{ root: { fontSize: '24px', fontWeight: '600', color: '#107c10', margin: '0 0 4px 0' } }}>
-            {stats.aprobadas}
-          </Text>
-          <Text styles={statLabelStyles}>Aprobadas</Text>
-        </Stack>
-        <Stack styles={statCardStyles}>
-          <Text styles={{ root: { fontSize: '24px', fontWeight: '600', color: '#d13438', margin: '0 0 4px 0' } }}>
-            {stats.rechazadas}
-          </Text>
-          <Text styles={statLabelStyles}>Rechazadas</Text>
-        </Stack>
-        <Stack styles={statCardStyles}>
-          <Text styles={{ root: { fontSize: '24px', fontWeight: '600', color: '#605e5c', margin: '0 0 4px 0' } }}>
-            {stats.canceladas}
-          </Text>
-          <Text styles={statLabelStyles}>Canceladas</Text>
         </Stack>
       </Stack>
 
@@ -544,7 +522,7 @@ const Solicitudes: React.FC = () => {
           type: DialogType.normal,
           title: 'Cancelar Solicitud',
           subText: selectedSolicitud
-            ? `¿Estás seguro de que deseas cancelar la solicitud #${selectedSolicitud.id}?`
+            ? `¿Estás seguro de que deseas cancelar la solicitud del ${formatDate(selectedSolicitud.fechaInicio)} al ${formatDate(selectedSolicitud.fechaFin)}?`
             : '',
         }}
         modalProps={{
@@ -578,9 +556,6 @@ const Solicitudes: React.FC = () => {
         dialogContentProps={{
           type: DialogType.normal,
           title: 'Detalle de Solicitud',
-          subText: solicitudDetail
-            ? `Solicitud #${solicitudDetail.id} - ${solicitudDetail.nombreSolicitante}`
-            : '',
         }}
         modalProps={{
           isBlocking: false,
@@ -625,10 +600,12 @@ const Solicitudes: React.FC = () => {
                 </Text>
               </Stack>
             )}
-            {solicitudDetail.comentarios && (
+            {solicitudDetail.comentarios && solicitudDetail.estado.toLowerCase() !== 'pendiente' && (
               <Stack tokens={{ childrenGap: 8 }}>
                 <Text variant="mediumPlus" styles={{ root: { fontWeight: '600' } }}>
-                  Comentarios del Aprobador
+                  {solicitudDetail.estado.toLowerCase() === 'aprobado' && 'Comentarios de Aprobación'}
+                  {solicitudDetail.estado.toLowerCase() === 'rechazado' && 'Motivo de Rechazo'}
+                  {solicitudDetail.estado.toLowerCase() === 'cancelada' && 'Motivo de Cancelación'}
                 </Text>
                 <Text styles={{ root: { backgroundColor: '#e8f4fd', padding: '8px', borderRadius: '4px' } }}>
                   {solicitudDetail.comentarios}

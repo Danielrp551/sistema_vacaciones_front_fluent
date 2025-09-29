@@ -129,7 +129,9 @@ export const useSolVacacionesController = () => {
       setHistorialData(data.historial || []);
     } catch (err: any) {
       console.error('Error loading historial:', err); // Debug log
-      setError(err?.response?.data?.message || 'Error al cargar el historial de vacaciones');
+      // Intentar extraer el mensaje de error específico del backend
+      const errorMessage = err?.response?.data || err?.response?.data?.message || err?.message || 'Error al cargar el historial de vacaciones';
+      setError(errorMessage);
     } finally {
       setIsLoadingHistory(false);
     }
@@ -214,7 +216,9 @@ export const useSolVacacionesController = () => {
 
     } catch (err: any) {
       console.error('Error submitting request:', err); // Debug log
-      setError(err?.response?.data?.message || 'Error al crear la solicitud de vacaciones');
+      // Intentar extraer el mensaje de error específico del backend
+      const errorMessage = err?.response?.data || err?.response?.data?.message || err?.message || 'Error al crear la solicitud de vacaciones';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

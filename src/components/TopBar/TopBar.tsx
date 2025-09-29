@@ -37,14 +37,6 @@ const TopBar = () => {
             <Text styles={styles.avatarText}>{getUserInitials()}</Text>
           </Stack>
           
-          {/* Icono de casa */}
-          <IconButton
-            iconProps={{ iconName: 'Home' }}
-            title="Inicio"
-            ariaLabel="Inicio"
-            styles={styles.actionButton}
-          />
-          
           {/* Icono de cerrar sesión */}
           <IconButton
             iconProps={{ iconName: 'SignOut' }}

@@ -200,23 +200,6 @@ const GestionSolicitudes: React.FC = () => {
       },
     },
     {
-      key: 'id',
-      name: 'ID',
-      fieldName: 'id',
-      minWidth: 60,
-      maxWidth: 80,
-      isResizable: false,
-      data: 'number',
-      isPadded: true,
-      isSorted: sortConfig?.key === 'id',
-      isSortedDescending: sortConfig?.key === 'id' && sortConfig?.direction === 'descending',
-      onRender: (item: SolicitudVacacionesDetailDto) => (
-        <Text variant="medium" styles={{ root: { fontWeight: '600' } }}>
-          #{item.id}
-        </Text>
-      ),
-    },
-    {
       key: 'solicitante',
       name: 'Solicitante',
       fieldName: 'nombreSolicitante',
@@ -931,7 +914,7 @@ const GestionSolicitudes: React.FC = () => {
           type: DialogType.normal,
           title: 'Aprobar Solicitud',
           subText: selectedSolicitud
-            ? `¿Estás seguro de que deseas aprobar la solicitud #${selectedSolicitud.id} de ${selectedSolicitud.nombreSolicitante}?`
+            ? `¿Estás seguro de que deseas aprobar la solicitud del ${formatDate(selectedSolicitud.fechaInicio)} al ${formatDate(selectedSolicitud.fechaFin)} de ${selectedSolicitud.nombreSolicitante}?`
             : '',
         }}
         modalProps={{
@@ -970,7 +953,7 @@ const GestionSolicitudes: React.FC = () => {
           type: DialogType.normal,
           title: 'Rechazar Solicitud',
           subText: selectedSolicitud
-            ? `¿Estás seguro de que deseas rechazar la solicitud #${selectedSolicitud.id} de ${selectedSolicitud.nombreSolicitante}?`
+            ? `¿Estás seguro de que deseas rechazar la solicitud del ${formatDate(selectedSolicitud.fechaInicio)} al ${formatDate(selectedSolicitud.fechaFin)} de ${selectedSolicitud.nombreSolicitante}?`
             : '',
         }}
         modalProps={{
@@ -1014,9 +997,6 @@ const GestionSolicitudes: React.FC = () => {
         dialogContentProps={{
           type: DialogType.normal,
           title: 'Detalle de Solicitud',
-          subText: selectedSolicitud
-            ? `Solicitud #${selectedSolicitud.id} - ${selectedSolicitud.nombreSolicitante}`
-            : '',
         }}
         modalProps={{
           isBlocking: false,
